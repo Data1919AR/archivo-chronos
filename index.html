@@ -1,0 +1,923 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Archivo Chronos · Una producción de fans de Star Trek</title>
+<meta name="description" content="Calendario de Adviento interactivo hecho por fans de Star Trek: 24 transmisiones perdidas de la USS Chronos, del 1 al 25 de diciembre. Gratuito, sin ánimo de lucro y no oficial.">
+<meta name="theme-color" content="#050b16">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_ES">
+<meta property="og:site_name" content="Archivo Chronos">
+<meta property="og:title" content="Archivo Chronos · Una producción de fans de Star Trek">
+<meta property="og:description" content="24 transmisiones perdidas, del 1 al 25 de diciembre. Gratuito, de fans para fans.">
+<meta property="og:image" content="og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Archivo Chronos · Calendario de Adviento · Una producción de fans de Star Trek">
+
+<meta name="twitter:card" content="summary_large_image">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Archivo Chronos">
+<style>
+@font-face{font-family:"Rajdhani";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/rajdhani-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Rajdhani";font-style:normal;font-weight:600;font-display:swap;src:url(fonts/rajdhani-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Rajdhani";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/rajdhani-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Saira";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/saira-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Saira";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/saira-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/ibm-plex-mono-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/ibm-plex-mono-latin-500-normal.woff2) format("woff2")}
+/* Layout: el puente de la Chronos a pantalla completa; la red temporal (24 nodos + Ω) flota en el centro como holograma; paneles de cristal a los lados en escritorio, debajo en móvil. Un solo aspecto oscuro. */
+:root{
+  --void:#0a0f1a;
+  --glass:rgba(16,30,52,.58);
+  --glass-edge:rgba(127,212,255,.38);
+  --ink:#eaf4ff;
+  --muted:#9fb3cc;
+  --cyan:#7fd9ff;
+  --gold:#f5c76a;
+  --grey:#6f7f96;
+  --danger:#ff7a7a;
+  --display:"Rajdhani","Arial Narrow",sans-serif;
+  --body:"Saira","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--void);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 24px}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+
+/* ---------- Fondo: el puente ---------- */
+.bg{position:fixed;inset:0;z-index:-1;background:var(--void) url(bg-h.jpg) center/cover no-repeat}
+@media (orientation:portrait){.bg{background-image:url(bg-v.jpg)}}
+.bg::after{content:"";position:absolute;inset:0;
+  background:radial-gradient(ellipse 60% 55% at 50% 48%,rgba(6,12,24,.78),rgba(6,12,24,.35) 70%,rgba(6,12,24,.55));}
+.scan{position:fixed;inset:0;z-index:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(160,220,255,.035) 0 1px,transparent 1px 3px);animation:flick 7s infinite steps(1)}
+@keyframes flick{0%,95%,100%{opacity:1}96%{opacity:.3;transform:translateX(2px)}97%{opacity:.8;transform:translateX(-2px)}}
+
+/* ---------- Cabecera ---------- */
+header{position:relative;z-index:1;text-align:center;margin:0 auto 6px;max-width:1300px}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(22px,3.4vw,34px);letter-spacing:.14em;margin:0;text-transform:uppercase;color:var(--cyan);text-shadow:0 0 18px rgba(127,217,255,.45)}
+h1 span{color:var(--ink);opacity:.75}
+.sub{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--muted);margin-top:2px}
+.rule{height:1px;max-width:620px;margin:8px auto 0;background:linear-gradient(90deg,transparent,var(--glass-edge),transparent)}
+
+/* ---------- Distribución ---------- */
+.app{position:relative;z-index:1;max-width:1300px;margin:0 auto;display:grid;gap:16px;
+  grid-template-columns:minmax(0,1fr);grid-template-areas:"left" "ring" "right"}
+@media (min-width:1000px){
+  .app{grid-template-columns:290px minmax(0,1fr) 290px;grid-template-areas:"left ring right";align-items:center}
+  .left{transform:perspective(900px) rotateY(10deg);transform-origin:left center}
+  .right{transform:perspective(900px) rotateY(-10deg);transform-origin:right center}
+}
+.ringwrap{grid-area:ring;width:100%;max-width:min(640px,100%);aspect-ratio:1/1;margin:0 auto}
+.ringwrap svg{width:100%;height:100%;display:block;overflow:visible}
+.left{grid-area:left}.right{grid-area:right}
+.left,.right{display:flex;flex-direction:column;gap:14px;min-width:0}
+
+/* ---------- Paneles de cristal ---------- */
+.glass{background:var(--glass);border:1px solid var(--glass-edge);border-radius:6px 18px 6px 18px;padding:14px 16px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 0 24px rgba(127,217,255,.08),inset 0 0 0 1px rgba(255,255,255,.03)}
+.glass h2{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.24em;margin:0 0 10px;color:var(--cyan);text-transform:uppercase;display:flex;justify-content:space-between}
+.glass h2 em{font-style:normal;color:var(--muted);font-family:var(--mono);font-size:10px;letter-spacing:.1em}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.stat b{display:block;font-family:var(--display);font-weight:700;font-size:28px;line-height:1;font-variant-numeric:tabular-nums}
+.stat span{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+.stat.sig b{color:var(--gold)}
+.meter{height:5px;border-radius:3px;background:rgba(255,255,255,.08);margin-top:12px;overflow:hidden}
+.meter i{display:block;height:100%;background:linear-gradient(90deg,var(--danger),var(--gold) 45%,var(--cyan));transition:width .6s}
+.log{list-style:none;margin:0;padding:0;font-family:var(--mono);font-size:11.5px;color:var(--muted);display:grid;gap:4px}
+.log li{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dashed rgba(127,212,255,.15);padding-bottom:3px}
+.log li b{color:var(--ink);font-weight:500}
+.log li.bad b{color:var(--danger)}
+
+.frags{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px}
+.frag{aspect-ratio:3/4;border-radius:4px;border:1px dashed rgba(127,212,255,.25);display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:18px}
+.frag.got{background:rgba(127,217,255,.18);border:1px solid var(--cyan);color:#fff;text-shadow:0 0 8px var(--cyan)}
+.frag.new{animation:land .7s ease-out}
+@keyframes land{from{transform:translateY(-10px);opacity:0;filter:blur(3px)}to{transform:none;opacity:1}}
+.note{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin:8px 0 0}
+.phrase{font-family:var(--display);font-weight:700;font-size:24px;letter-spacing:.14em;color:#fff;text-shadow:0 0 14px var(--cyan);margin-top:8px;text-wrap:balance}
+
+.detail .code{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--cyan)}
+.detail h3{font-family:var(--display);font-weight:700;font-size:28px;line-height:1.05;margin:4px 0 8px;text-transform:uppercase;letter-spacing:.04em;text-wrap:balance}
+.detail p{margin:0 0 10px;color:var(--muted);font-size:14px}
+.detail .who{color:var(--ink)}
+.tag{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;padding:2px 9px;border-radius:999px;border:1px solid currentColor;margin-bottom:10px}
+.tag.done{color:var(--cyan)}.tag.today{color:var(--gold)}.tag.locked{color:var(--danger)}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--cyan);color:#06111f;border:0;border-radius:4px 14px 4px 14px;padding:9px 20px;font-family:var(--display);font-weight:700;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 18px rgba(127,217,255,.4)}
+.btn.gold{background:var(--gold);box-shadow:0 0 18px rgba(245,199,106,.4)}
+.btn:hover{filter:brightness(1.1)}
+
+
+/* ---------- Red temporal (SVG) ---------- */
+.node{cursor:pointer}
+.node .halo{fill:none;stroke-width:1.2}
+.node .halo2{fill:none;stroke-width:.8;stroke-dasharray:2 3}
+.node .core{stroke-width:2}
+.node .dot{pointer-events:none}
+.node .num{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.node.done .halo,.node.done .halo2,.node.done .core{stroke:var(--cyan)}
+.node.done .core{fill:rgba(20,70,110,.55)}
+.node.done .dot{fill:#e6fbff;filter:url(#glow)}
+.node.done .num{fill:var(--cyan)}
+.node.locked .halo,.node.locked .halo2,.node.locked .core{stroke:var(--gold);opacity:.55}
+.node.locked .core{fill:rgba(60,45,15,.45)}
+.node.locked .dot{fill:var(--gold);opacity:.55}
+.node.locked .num{fill:var(--gold);opacity:.6}
+.node.today .halo,.node.today .halo2,.node.today .core{stroke:var(--gold)}
+.node.today .core{fill:rgba(120,90,20,.45)}
+.node.today .dot{fill:#fff4d6;filter:url(#glowGold)}
+.node.today .num{fill:var(--gold)}
+.node.today .halo{animation:pulse 2.2s ease-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes pulse{from{opacity:.95;transform:scale(1)}to{opacity:0;transform:scale(1.7)}}
+.node.sel .core{stroke:#fff;stroke-width:2.6}
+.node:hover .core{stroke:#fff}
+.fil{fill:none;stroke-width:1}
+.fil.c{stroke:var(--cyan);opacity:.5}.fil.g{stroke:var(--gold);opacity:.28}
+.fil.flow{stroke-dasharray:4 7;animation:flow 3s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-44}}
+.arc{fill:none;stroke-width:1.8;opacity:.75}
+.arc.c{stroke:var(--cyan);filter:url(#glow)}.arc.g{stroke:var(--gold);opacity:.35}
+.spark{pointer-events:none}
+.omega .core{fill:rgba(255,248,225,.12);stroke:rgba(255,255,255,.6);stroke-width:1.2}
+.omega .dot{fill:#fffbea;filter:url(#glowGold)}
+.omega .sym{font-family:var(--display);font-weight:700;font-size:20px;fill:#0a0f1a;text-anchor:middle;dominant-baseline:central}
+.omega .lab{font-family:var(--mono);font-size:9px;letter-spacing:.22em;fill:var(--muted);text-anchor:middle}
+.omega.open .dot{fill:#fff;filter:url(#glow)}
+.omega.open .lab{fill:#fff}
+
+/* ---------- Pantalla de inicio ---------- */
+.splash{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:#03050b url(terminal.jpg) center/cover;padding:24px max(16px,env(safe-area-inset-left,0px))}
+.splash::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(3,5,11,.5),rgba(3,5,11,.9))}
+.splash::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 1px,transparent 1px 3px)}
+.splash .box{position:relative;z-index:1;text-align:center;max-width:560px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.splash .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.3em;color:var(--cyan)}
+.splash h2{font-family:var(--display);font-weight:700;font-size:clamp(50px,11vw,96px);line-height:.88;margin:0;letter-spacing:.08em;text-transform:uppercase;animation:glitch 4s infinite}
+.splash p{color:#c9d6ee;margin:0}
+.splash .integ{font-family:var(--mono);font-size:12px;color:var(--gold)}
+@keyframes glitch{0%,92%,100%{text-shadow:0 0 22px rgba(127,217,255,.35);transform:none}93%{text-shadow:-3px 0 var(--cyan),3px 0 var(--danger);transform:translateX(2px)}95%{text-shadow:2px 0 var(--gold);transform:translateX(-2px)}}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--danger);color:#160606;font-family:var(--mono);font-size:13px;padding:10px 18px;border-radius:999px;z-index:30;max-width:calc(100% - 32px);text-align:center}
+/* ---------- Pantalla de registro ---------- */
+.rec{position:fixed;inset:0;z-index:40;background:#03060d;display:flex;flex-direction:column;
+  padding:calc(10px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.rec::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(160,220,255,.04) 0 1px,transparent 1px 3px)}
+.rhead{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;color:var(--muted);flex-wrap:wrap}
+.rhead .pill{background:var(--gold);color:#140e02;border-radius:999px;padding:3px 12px;font-weight:500}
+.rhead .grow{flex:1}
+.rhead .x{background:transparent;border:1px solid var(--glass-edge);border-radius:999px;color:var(--ink);font-family:var(--mono);font-size:11px;letter-spacing:.12em;padding:6px 12px;cursor:pointer}
+.steps{display:flex;gap:4px;margin:10px 0 12px}
+.steps i{flex:1;height:3px;border-radius:2px;background:rgba(127,212,255,.15)}
+.steps i.on{background:var(--cyan)}
+.rbody{flex:1;min-height:0;display:grid;place-items:center;position:relative}
+.phase{width:100%;max-width:980px;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center}
+
+.intro{font-family:var(--display);font-weight:700;text-transform:uppercase}
+.intro .l1{font-size:clamp(28px,6vw,54px);letter-spacing:.12em;color:var(--cyan);text-shadow:0 0 20px rgba(127,217,255,.5)}
+.intro .l2{font-family:var(--mono);font-weight:400;font-size:13px;letter-spacing:.3em;color:var(--muted)}
+.intro .l3{font-size:clamp(20px,3.6vw,30px);letter-spacing:.08em}
+.blink{animation:blink 1s steps(1) infinite}@keyframes blink{50%{opacity:0}}
+
+.screen{position:relative;width:100%;aspect-ratio:16/9;max-height:calc(100vh - 210px);max-width:min(100%,calc((100vh - 210px)*16/9));background:#000;border:1px solid var(--glass-edge);border-radius:10px;overflow:hidden;box-shadow:0 0 40px rgba(127,217,255,.12)}
+.screen video,.screen .still{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.screen canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:screen;opacity:.16}
+.screen::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),radial-gradient(ellipse at center,transparent 60%,rgba(0,0,0,.55))}
+.screen .tear{position:absolute;left:0;right:0;height:9%;top:40%;background:rgba(255,255,255,.07);backdrop-filter:hue-rotate(90deg) saturate(2);-webkit-backdrop-filter:hue-rotate(90deg) saturate(2);transform:translateX(-3%);opacity:0;pointer-events:none}
+.screen.g .media{transform:translateX(6px) skewX(-2deg);filter:hue-rotate(40deg) saturate(1.6) contrast(1.3)}
+.screen.g .tear{opacity:1}
+.screen.g2 .media{transform:translateX(-10px) scaleY(1.02);filter:brightness(1.6) grayscale(.6)}
+.screen.g2 .tear{opacity:1;top:68%}
+.media{transition:none}
+.hud{position:absolute;inset:auto auto 10px 12px;font-family:var(--mono);font-size:11px;color:#dff4ff;text-shadow:0 0 4px #000;display:flex;gap:12px;align-items:center;z-index:2}
+.hud .dot{width:8px;height:8px;border-radius:50%;background:var(--danger);animation:blink 1.2s steps(1) infinite}
+.hud.tr{inset:10px 12px auto auto}
+.subs{position:absolute;left:5%;right:5%;bottom:12%;z-index:2;font-size:clamp(14px,2.2vw,20px);line-height:1.35;color:#fff;text-shadow:0 2px 6px #000,0 0 2px #000;min-height:1.4em}
+.subs b{color:var(--gold);font-weight:500;font-family:var(--mono);font-size:.75em;letter-spacing:.1em;display:block}
+.vctl{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.ghost{background:transparent;border:1px solid var(--glass-edge);color:var(--ink);border-radius:4px 14px 4px 14px;padding:8px 16px;font-family:var(--display);font-weight:600;letter-spacing:.14em;text-transform:uppercase;cursor:pointer}
+.ghost:hover{border-color:var(--cyan);color:var(--cyan)}
+
+.planb{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:6%;background:radial-gradient(ellipse at center,#0d1a30,#02040a)}
+.planb .wave{width:80%;height:22%}
+.planb .tag2{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--gold)}
+.planb canvas.wave{position:static;inset:auto;width:80%;opacity:1;mix-blend-mode:normal;pointer-events:none}
+.planb.audio{gap:12px}
+.arow{display:flex;align-items:center;gap:4%;width:92%}
+.pfile{position:relative;flex:0 0 28%;aspect-ratio:3/4;border:1px solid var(--glass-edge);border-radius:6px;overflow:hidden;background:#0a1220}
+.pfile img{width:100%;height:100%;object-fit:cover;filter:grayscale(.35) contrast(1.1) brightness(.9);animation:stillflick 3.4s infinite steps(1)}
+.pfile span{position:absolute;left:0;right:0;bottom:0;padding:6px 8px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--cyan);background:linear-gradient(transparent,rgba(0,0,0,.85))}
+@keyframes stillflick{0%,86%,100%{transform:none;opacity:1}87%{transform:translateX(4px);opacity:.6}89%{transform:translateX(-3px) skewX(3deg);opacity:.9}}
+.planb.audio canvas.wave{flex:1;min-width:0;width:auto;height:auto;aspect-ratio:600/160}
+.docsc{position:absolute;inset:0;overflow:hidden;background:#02040a}
+.docsc img{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;transition:opacity 1.4s ease,transform 9s ease-out}
+.docsc .bgc{filter:saturate(.8) brightness(.95);transform:scale(1.03)}
+.docsc.zoom .bgc{transform:scale(1.12) translate(-3%,2%)}
+.docsc .cons{opacity:0;filter:brightness(.9) contrast(1.1)}
+.docsc.end .cons{opacity:1;transform:scale(1.06)}
+.docsc.end .bgc,.docsc.end .plq{opacity:0}
+.docsc .kdot{position:absolute;left:39%;top:44.7%;width:3.6%;height:2%;border-radius:50%;transform:translate(-50%,-50%);background:#5ff3e0;box-shadow:0 0 12px 4px rgba(95,243,224,.7);opacity:0;transition:opacity 1.4s}
+.docsc.end .kdot{opacity:1;animation:kblink 1.6s ease-in-out infinite 1.4s}
+@keyframes kblink{50%{opacity:.15}}
+.plq{position:absolute;left:40.2%;top:27%;width:28.4%;height:33.5%;container-type:inline-size;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;text-align:center;white-space:nowrap;font-family:var(--display);font-weight:700;color:#3a4250;text-shadow:0 1px 0 rgba(255,255,255,.55),0 -1px 0 rgba(0,0,0,.35);transition:opacity 1.2s;transform-origin:center}
+.plq .p1{font-size:8.6cqw;letter-spacing:.1em;line-height:1}
+.plq .p2{margin-top:5cqw;font-size:6.4cqw;letter-spacing:.18em;min-height:1.1em;line-height:1.1}
+.plq .p3{margin-top:2.5cqw;font-size:4.2cqw;letter-spacing:.14em;min-height:1.1em}
+.plq .p4{margin-top:7cqw;font-size:3cqw;letter-spacing:.16em;opacity:.8}
+.plq .hr{margin-top:4cqw;width:70%;height:0;border-top:1px solid rgba(40,48,60,.5);box-shadow:0 1px 0 rgba(255,255,255,.4)}
+.plq.new .p2,.plq.new .p3{color:#5b2f2f}
+.plq .cur{display:inline-block;width:.08em;background:currentColor;margin-left:.06em;animation:blink 1s steps(1) infinite}
+.docsc .dtag{position:absolute;left:3%;top:9%;z-index:1;font-family:var(--mono);font-size:clamp(9px,1.3vw,12px);letter-spacing:.2em;color:var(--gold);text-shadow:0 1px 4px #000}
+.docsc.end .dtag b{color:var(--danger)}
+.screen.g .docsc{transform:translateX(6px) skewX(-2deg);filter:hue-rotate(40deg) saturate(1.6) contrast(1.3)}
+.screen.g2 .docsc{transform:translateX(-10px) scaleY(1.02);filter:brightness(1.6) grayscale(.6)}
+.vnote{position:absolute;left:3%;top:10%;z-index:2;max-width:46%;text-align:left;font-family:var(--mono);font-size:clamp(10px,1.4vw,13px);line-height:1.45;letter-spacing:.06em;color:#ffd27a;background:rgba(0,0,0,.55);border-left:2px solid var(--gold);padding:8px 12px;opacity:0;transition:opacity .6s}
+.vnote.on{opacity:1}
+.vnote b{display:block;color:var(--cyan);font-size:.85em;letter-spacing:.18em;margin-bottom:3px}
+
+/* ===== Protocolo Omega ===== */
+.om{display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center;width:100%}
+.om .k{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--cyan)}
+.om h3{font-family:var(--display);font-weight:700;font-size:clamp(22px,4vw,34px);letter-spacing:.1em;margin:0;text-transform:uppercase;text-wrap:balance}
+.om .k.gold{color:var(--gold)}
+.syncbox{position:relative;width:min(100%,640px);height:240px}
+.syncbox .t{position:absolute;left:0;top:0;width:var(--s);height:calc(var(--s)*1.25);display:grid;place-items:center;border:1px solid var(--glass-edge);border-radius:4px;background:var(--glass);font-family:var(--display);font-weight:700;font-size:calc(var(--s)*.62);color:#fff;transition:transform 1.3s cubic-bezier(.6,.05,.25,1),box-shadow .6s,border-color .6s;will-change:transform}
+.syncbox.done .t{border-color:var(--cyan);box-shadow:0 0 14px rgba(127,217,255,.55)}
+.om .cnt{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.08em}
+.om .final{font-family:var(--display);font-weight:700;letter-spacing:.14em;font-size:clamp(14px,2.4vw,20px);color:var(--cyan)}
+.cert{width:min(100%,720px);border-radius:8px;box-shadow:0 0 40px rgba(245,199,106,.25);border:1px solid rgba(245,199,106,.5)}
+.om .namerow{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center}
+.om input{font-family:var(--display);font-size:18px;letter-spacing:.06em;padding:8px 12px;border-radius:4px;border:1px solid var(--glass-edge);background:var(--glass);color:#fff;min-width:0;width:min(320px,80vw)}
+.om .rank{font-family:var(--display);font-weight:700;font-size:clamp(20px,3.4vw,28px);color:var(--gold);letter-spacing:.08em}
+.om .tiny{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.om a.btn{text-decoration:none}
+
+/* ===== Mejoras v2 ===== */
+.hdrtools{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px;margin-top:8px}
+.ghost.sm{padding:5px 12px;font-size:12px;white-space:nowrap}
+#officer{color:var(--gold);margin-top:4px}
+#officer:empty{display:none}
+.nextsig{font-family:var(--mono);font-size:11.5px;color:var(--gold);margin:10px 0 0;letter-spacing:.04em}
+.nextsig:empty{display:none}
+.splash .boot{font-family:var(--mono);font-size:clamp(13px,2.2vw,16px);color:var(--cyan);text-align:left;width:min(100%,520px);min-height:9em;display:flex;flex-direction:column;gap:8px}
+.splash .boot .bl{white-space:pre-wrap}
+.splash .boot .bl.ok{color:var(--gold)}
+.splash .bootask{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.splash .bootask input{font-family:var(--display);font-size:18px;letter-spacing:.06em;padding:8px 12px;border-radius:4px;border:1px solid var(--glass-edge);background:var(--glass);color:#fff;min-width:0;width:min(260px,70vw)}
+.planb .plate{border:2px solid #8e9bb0;border-radius:6px;padding:16px 26px;font-family:var(--display);font-weight:700;letter-spacing:.2em;font-size:clamp(18px,3vw,28px);color:#d7dde8;background:linear-gradient(180deg,#5a6476,#2f3746);box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
+.planb .plate s{color:var(--danger);text-decoration-thickness:2px}
+
+.noise{position:absolute;inset:0;display:grid;place-items:center}
+.noise canvas{position:absolute;inset:0;width:100%;height:100%;opacity:1;mix-blend-mode:normal}
+.noise b{position:relative;font-family:var(--display);font-size:clamp(26px,5vw,46px);letter-spacing:.2em;color:#fff;background:#000;padding:6px 18px}
+
+.alert{width:100%;max-width:640px;border:1px solid var(--danger);border-radius:6px 22px 6px 22px;background:rgba(60,10,14,.55);padding:22px 22px 24px;box-shadow:0 0 40px rgba(255,90,90,.25);text-align:left}
+.alert .k{font-family:var(--mono);font-size:12px;letter-spacing:.2em;color:var(--danger)}
+.alert h3{font-family:var(--display);font-weight:700;font-size:clamp(24px,4.5vw,38px);margin:8px 0 4px;letter-spacing:.04em;text-transform:uppercase;line-height:1.05;text-wrap:balance}
+.alert h3 .x{color:var(--danger)}
+.alert .yr{font-family:var(--mono);font-size:14px;color:var(--muted)}
+.alert p{color:#e8c9c9;margin:14px 0 18px}
+.corrupt{animation:corrupt .18s steps(2) infinite}
+@keyframes corrupt{50%{opacity:.6;transform:translateX(1px)}}
+
+.quiz{width:100%;max-width:640px;text-align:left}
+.quiz .k{font-family:var(--mono);font-size:12px;letter-spacing:.2em;color:var(--cyan)}
+.quiz h3{font-family:var(--display);font-weight:700;font-size:clamp(22px,4vw,32px);margin:8px 0 16px;line-height:1.1;text-wrap:balance}
+.opts{display:grid;gap:10px}
+.opt{text-align:left;background:var(--glass);border:1px solid var(--glass-edge);border-radius:4px 16px 4px 16px;padding:14px 16px;font-size:16px;cursor:pointer;display:flex;gap:12px;align-items:center}
+.opt span{font-family:var(--mono);color:var(--cyan);font-size:13px}
+.opt:hover:not([disabled]){border-color:var(--cyan);background:rgba(127,217,255,.12)}
+.opt.ok{border-color:#6fe3a6;background:rgba(111,227,166,.16)}
+.opt.ko{border-color:var(--danger);background:rgba(255,122,122,.14)}
+.opt[disabled]{cursor:default}
+.verdict{margin-top:16px;font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:.14em}
+.verdict.ok{color:#6fe3a6}.verdict.ko{color:var(--gold)}
+.archive{margin-top:12px;border-left:3px solid var(--cyan);padding:4px 0 4px 14px;color:#cfe0f5}
+.archive b{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--cyan);font-weight:500;margin-bottom:4px}
+
+.fa-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:980px}
+.fcard{width:78px;border:1px solid var(--glass-edge);border-radius:8px;background:var(--glass);padding:8px 4px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;color:var(--ink)}
+.fcard b{font-family:var(--display);font-size:40px;line-height:1;color:#fff;text-shadow:0 0 10px var(--cyan)}
+.fcard span{font-family:var(--mono);font-size:9.5px;color:var(--muted);letter-spacing:.04em}
+.fcard.on{border-color:var(--gold);box-shadow:0 0 16px rgba(245,199,106,.45)}
+.fa-read{font-family:var(--display);font-weight:700;font-size:clamp(24px,4.5vw,40px);letter-spacing:.2em;color:#fff;text-shadow:0 0 14px var(--cyan);min-height:1.2em;text-align:center;word-break:break-all}
+.fa-help{color:var(--muted);max-width:620px;text-align:center;margin:0}
+.fragbig{display:flex;flex-direction:column;align-items:center;gap:10px}
+.fragbig .k{font-family:var(--mono);font-size:12px;letter-spacing:.24em;color:var(--cyan)}
+.fragbig .card{width:150px;aspect-ratio:3/4;border-radius:10px;border:1px solid var(--cyan);background:radial-gradient(circle at 50% 40%,rgba(127,217,255,.35),rgba(10,30,50,.8));display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:96px;color:#fff;text-shadow:0 0 24px var(--cyan);animation:materialize 1.6s ease-out}
+@keyframes materialize{0%{opacity:0;filter:blur(14px);transform:scale(.6) rotateY(90deg)}60%{opacity:1;filter:blur(2px)}100%{transform:none;filter:none}}
+.fragbig .meta{font-family:var(--mono);font-size:13px;color:var(--muted);letter-spacing:.08em}
+.fragbig .hook{max-width:520px;color:#cfe0f5}
+
+/* ===== Producción de fans: aviso, créditos y compartir ===== */
+.fanline{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--muted);text-align:center;max-width:520px;line-height:1.5}
+.fanline button,.foot button{background:none;border:0;padding:0;color:var(--cyan);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font:inherit;letter-spacing:inherit}
+.splash .fanline{margin-top:6px}
+.foot{position:relative;z-index:1;max-width:900px;margin:22px auto 0;padding-top:12px;border-top:1px solid rgba(127,212,255,.18);font-family:var(--mono);font-size:10.5px;line-height:1.6;letter-spacing:.05em;color:var(--muted);text-align:center}
+.cred{position:fixed;inset:0;z-index:60;background:rgba(3,6,13,.97);overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:calc(14px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(28px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.cred .in{max-width:720px;margin:0 auto}
+.cred .top{display:flex;align-items:center;gap:10px;position:sticky;top:0;background:rgba(3,6,13,.97);padding:6px 0 10px;z-index:1}
+.cred .top b{font-family:var(--display);font-weight:700;letter-spacing:.16em;color:var(--cyan);font-size:18px;flex:1}
+.cred h3{font-family:var(--display);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-size:15px;margin:22px 0 6px}
+.cred p,.cred li{color:#d3dff0;font-size:14px;margin:0 0 8px}
+.cred ul{margin:0 0 8px;padding-left:20px}
+.cred .legal{border:1px solid var(--glass-edge);border-radius:6px 16px 6px 16px;background:var(--glass);padding:12px 14px}
+.cred .legal p{font-size:13px}
+.cred .en{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.cred .badge{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:#06111f;background:var(--cyan);border-radius:999px;padding:3px 12px;margin:4px 6px 0 0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<div class="bg" aria-hidden="true"></div>
+<div class="scan" aria-hidden="true"></div>
+
+<div class="splash" id="splash">
+  <div class="box">
+    <div class="eyebrow">TRANSMISIÓN RECUPERADA · USS CHRONOS</div>
+    <h2>Archivo<br>Chronos</h2>
+    <p>Una anomalía está borrando la historia de la Federación. Veinticuatro registros han llegado hasta ti. Recupéralos antes de que desaparezcan.</p>
+    <div class="integ">INTEGRIDAD DE SEÑAL 97 % · ORIGEN DESCONOCIDO</div>
+    <button class="btn" id="start">Iniciar investigación</button>
+    <div class="fanline">UNA PRODUCCIÓN DE FANS DE STAR TREK<br>GRATUITA · SIN ÁNIMO DE LUCRO · NO OFICIAL<br><button type="button" class="credbtn">Aviso legal y créditos</button></div>
+  </div>
+</div>
+
+<header>
+  <h1>Archivo Chronos <span>// Red temporal</span></h1>
+  <div class="sub" id="sub">USS CHRONOS · REGISTROS DE LA CAPITANA LYRA VOSS · FE 79421.6</div>
+  <div class="sub" id="officer"></div>
+  <div class="hdrtools"><button class="ghost sm" id="snd">Sonido: sí</button><button class="ghost sm" id="ics">Recordatorios en mi calendario</button><button class="ghost sm" id="share">Compartir</button></div>
+  <div class="rule"></div>
+</header>
+
+
+<div class="app">
+  <div class="ringwrap"><svg id="ring" viewBox="-20 -20 640 640" role="group" aria-label="Red temporal: 24 registros y el Protocolo Omega"></svg></div>
+
+  <div class="left">
+    <section class="glass">
+      <h2>Estado del archivo <em id="fe">FE 79421.6</em></h2>
+      <div class="stats">
+        <div class="stat"><b id="sRec">07</b><span>de 24 registros</span></div>
+        <div class="stat sig"><b id="sSig">70 %</b><span>Señal</span></div>
+        <div class="stat"><b id="sOm">—</b><span>Omega</span></div>
+      </div>
+      <div class="meter"><i id="meter" style="width:70%"></i></div>
+      <p class="nextsig" id="nextsig"></p>
+    </section>
+    <section class="glass">
+      <h2>Historial de borrados</h2>
+      <ul class="log" id="log"></ul>
+    </section>
+  </div>
+
+  <div class="right">
+    <section class="glass detail" id="detail" aria-live="polite"></section>
+    <section class="glass">
+      <h2>Fragmentos temporales <em id="fcount">7/24</em></h2>
+      <div class="frags" id="frags"></div>
+      <p class="note" id="fragnote">Llegan en el orden en que se recuperan, no en el que fueron enviados.</p>
+      <button class="ghost" id="farch" hidden style="margin-top:10px">Abrir archivo de fragmentos</button>
+      <div class="phrase" id="phrase" hidden></div>
+    </section>
+  </div>
+</div>
+
+<footer class="foot">
+  Archivo Chronos · Una producción de fans de Star Trek, hecha por un fan para fans.<br>
+  Gratuita, sin anuncios, sin donaciones y sin ánimo de lucro. No oficial. · <button type="button" class="credbtn">Aviso legal y créditos</button>
+</footer>
+
+<div class="cred" id="cred" hidden role="dialog" aria-modal="true" aria-label="Aviso legal y créditos"><div class="in">
+  <div class="top"><b>AVISO LEGAL Y CRÉDITOS</b><button class="ghost sm" id="credx">Cerrar ✕</button></div>
+  <span class="badge">DE FANS PARA FANS</span><span class="badge">GRATUITO</span><span class="badge">SIN ÁNIMO DE LUCRO</span><span class="badge">NO OFICIAL</span>
+
+  <h3>Qué es esto</h3>
+  <p>Archivo Chronos es un calendario de Adviento interactivo creado por un aficionado, como homenaje y para compartirlo con otros aficionados. Su única finalidad es la difusión entre fans: no se vende, no tiene anuncios, no pide donaciones ni ofrece nada a cambio, y no genera ningún ingreso.</p>
+  <p>Se puede ver y compartir libremente el enlace. No está permitido ningún uso comercial de esta obra ni de sus contenidos.</p>
+
+  <h3>Aviso legal</h3>
+  <div class="legal">
+    <p>Star Trek y todas las marcas, logotipos y personajes relacionados son propiedad exclusiva de CBS Studios Inc. Esta producción de fans no está respaldada ni patrocinada por CBS, Paramount Pictures ni ninguna otra franquicia de Star Trek, ni tiene relación con ellas. Es una obra no comercial hecha por fans con fines recreativos. No se permite su exhibición ni su distribución comerciales. No se reclama ningún derecho independiente frente a CBS o Paramount Pictures.</p>
+    <p class="en">Star Trek and all related marks, logos and characters are solely owned by CBS Studios Inc. This fan production is not endorsed by, sponsored by, nor affiliated with CBS, Paramount Pictures, or any other Star Trek franchise, and is a non-commercial fan-made production intended for recreational use. No commercial exhibition or distribution is permitted. No alleged independent rights will be asserted against CBS or Paramount Pictures.</p>
+  </div>
+
+  <h3>Historia y personajes</h3>
+  <p>La nave USS Chronos, su tripulación (la capitana Lyra Voss, Kael, T'Rena y el agente Hale), MNEMOS, la Biblioteca del Tiempo y toda la trama son originales, creados para este proyecto. Las preguntas y los datos del archivo mencionan acontecimientos de las series y películas de Star Trek únicamente como homenaje y referencia para los fans.</p>
+
+  <h3>Imagen y sonido</h3>
+  <ul>
+    <li><b>Vídeos e imágenes:</b> creados con herramientas de inteligencia artificial a partir de descripciones originales. No contienen metraje, fotogramas, música ni grabaciones de las series o películas.</li>
+    <li><b>Música y efectos:</b> la música de ambiente, la del Protocolo Omega y todos los efectos se generan en tu propio navegador mediante síntesis; son originales. La fanfarria final es una pieza libre de derechos.</li>
+    <li><b>Emblemas e iconos:</b> diseños originales del proyecto. No se usan logotipos oficiales.</li>
+    <li><b>Tipografías:</b> Rajdhani (Indian Type Foundry), Saira (Omnibus-Type) e IBM Plex Mono (IBM), con licencia SIL Open Font License 1.1.</li>
+  </ul>
+
+  <h3>Privacidad</h3>
+  <p>No hay registro, cookies, publicidad ni estadísticas. Tu nombre y tu progreso se guardan solo en tu dispositivo y nunca salen de él. Puedes borrarlos cuando quieras borrando los datos del sitio en tu navegador.</p>
+
+  <h3>Un favor</h3>
+  <p>Si llegas al final, no desveles la frase del Protocolo Omega: deja que cada fan la descubra por sí mismo.</p>
+
+  <h3>Autoría</h3>
+  <p>Idea, guion y producción: Data1919, un fan. Larga vida y prosperidad.</p>
+</div></div>
+
+<div class="toast" id="toast" hidden></div>
+<div class="rec" id="farc" hidden role="dialog" aria-modal="true" aria-label="Archivo de fragmentos"></div>
+<div class="rec" id="rec" hidden role="dialog" aria-modal="true" aria-label="Registro"></div>
+
+<script>
+const RECS=[{"n": 1, "title": "La Primera Señal", "who": "Lyra Voss", "place": "Astrometría Temporal", "fmt": "video", "lines": [{"who": "Lyra", "text": "Diario de la capitana. Aquí Lyra Voss, de la USS Chronos. Iniciando protocolo de archivo temporal."}, {"who": "Lyra", "text": "Nuestros sensores han detectado una distorsión que no coincide con ningún fenómeno registrado por la Federación."}, {"who": "Lyra", "text": "Conservad cualquier registro que recibáis."}, {"who": "Lyra", "text": "Un momento… los archivos de Romulus acaban de desaparecer."}], "event": "Supernova de Romulus", "year": "2387", "q": "¿Qué almirante dimitió cuando se canceló la evacuación romulana?", "opts": ["Jean-Luc Picard", "Kathryn Janeway", "William Riker"], "archive": "La supernova aparece en Star Trek (2009) y la dimisión de Picard en la serie Star Trek: Picard.", "fe": 52339.1, "letter": "E", "video": "media/R01.mp4", "poster": "media/R01.jpg", "subs": [[0.4, 7.6, "Diario de la capitana. Aquí Lyra Voss, de la USS Chronos. Iniciando protocolo de archivo temporal.", "Lyra"], [8.3, 15.6, "Nuestros sensores han detectado una distorsión que no coincide con ningún fenómeno registrado por la Federación.", "Lyra"], [16.0, 18.2, "Conservad cualquier registro que recibáis.", "Lyra"], [20.3, 23.7, "Un momento… los archivos de Romulus acaban de desaparecer.", "Lyra"]]}, {"n": 2, "title": "Lecturas Imposibles", "who": "T'Rena", "place": "Laboratorio de análisis", "fmt": "video", "lines": [{"who": "T'Rena", "text": "Los análisis indican una contradicción temporal. La anomalía existe en múltiples momentos históricos simultáneamente."}, {"who": "T'Rena", "text": "Y sigue un rumbo. No en el espacio. En el tiempo."}], "event": "Regreso de la Voyager", "year": "2378", "q": "¿Quién ayudó a la Voyager a volver a casa desde el futuro?", "opts": ["La almirante Janeway", "Q", "El Viajero"], "archive": "En \"Fin del juego\" (2001), la almirante Janeway viaja 26 años atrás y usa una red transwarp borg para traer la nave a casa.", "fe": 60565.7, "letter": "H", "video": "media/R02.mp4", "poster": "media/R02.jpg", "subs": [[0.3, 7.8, "Los análisis indican una contradicción temporal. La anomalía existe en múltiples momentos históricos simultáneamente.", "T'Rena"], [8.4, 15.9, "Y sigue un rumbo. No en el espacio. En el tiempo.", "T'Rena"]]}, {"n": 3, "title": "Ecos en el Tiempo", "who": "Lyra Voss", "place": "Astrometría Temporal", "fmt": "video", "lines": [{"who": "Lyra", "text": "Hemos detectado transmisiones procedentes de siglos distintos. Todas contienen patrones idénticos."}, {"who": "Eco", "text": "[Grabación antigua] «…Conservad cualquier registro que recibáis…»"}, {"who": "Lyra", "text": "He aislado una voz en el eco más antiguo… Es la mía."}], "event": "Fin de la Guerra del Dominio", "year": "2375", "q": "¿Quiénes gobiernan el Dominio?", "opts": ["Los Fundadores", "Los Vorta", "Los Jem'Hadar"], "archive": "La guerra terminó con el Tratado de Bajor en el final de Espacio Profundo Nueve. Odo regresó al Gran Vínculo para curar a su pueblo.", "fe": 42742.3, "letter": "L", "video": "media/R03.mp4", "poster": "media/R03.jpg", "subs": [[0.3, 7.8, "Hemos detectado transmisiones procedentes de siglos distintos. Todas contienen patrones idénticos.", "Lyra"], [9.6, 12.0, "[Grabación antigua] «…Conservad cualquier registro que recibáis…»", "Eco"], [12.3, 15.9, "He aislado una voz en el eco más antiguo… Es la mía.", "Lyra"]]}, {"n": 4, "title": "Investigación Oficial", "who": "Agente Hale (primera aparición)", "place": "Puente", "fmt": "video", "lines": [{"who": "Hale", "text": "Agente Hale, Departamento de Investigaciones Temporales. Desde este momento, todos los registros de esta nave quedan clasificados."}, {"who": "Hale", "text": "Y usted tendrá que explicar por qué su voz aparece en un archivo de hace tres siglos."}], "event": "Muerte de Kirk en Veridian III", "year": "2371", "q": "¿En qué fenómeno coincidieron Kirk y Picard?", "opts": ["El Nexo", "La Barrera Galáctica", "El Continuo Q"], "archive": "En Star Trek: Generaciones (1994), Kirk muere en Veridian III ayudando a Picard. Sus últimas palabras en versión original fueron «Oh, my».", "fe": 67420.3, "letter": "R", "video": "media/R04.mp4", "poster": "media/R04.jpg", "subs": [[0.8, 7.8, "Agente Hale, Departamento de Investigaciones Temporales. Desde este momento, todos los registros de esta nave quedan clasificados.", "Hale"], [8.4, 15.6, "Y usted tendrá que explicar por qué su voz aparece en un archivo de hace tres siglos.", "Hale"]]}, {"n": 5, "title": "La Voz Oculta", "who": "Kael", "place": "Comunicaciones", "fmt": "audio", "lines": [{"who": "Kael", "text": "Hemos aislado una señal oculta dentro de la anomalía. La fuente parece estar intentando comunicarse."}, {"who": "Kael", "text": "Solo he descifrado una palabra. Se repite sin parar…"}, {"who": "Señal desconocida", "text": "…ayuda…"}], "event": "La Voyager llega al Cuadrante Delta", "year": "2371", "q": "¿Qué entidad arrastró a la Voyager?", "opts": ["El Custodio", "Q", "Los Borg"], "archive": "El Custodio la lanzó a 70.000 años luz de casa: unos 75 años de viaje a máxima curvatura.", "fe": 49597.8, "letter": "A", "audio": "media/R05.mp3", "still": "media/R05.jpg", "subs": [[0.9, 3.8, "Hemos aislado una señal oculta dentro de la anomalía.", "Kael"], [4.9, 7.5, "La fuente parece estar intentando comunicarse.", "Kael"], [9.5, 11.1, "Solo he descifrado una palabra.", "Kael"], [11.4, 13.2, "Se repite sin parar…", "Kael"], [14.2, 15.4, "Ayuda.", "Kael"], [16.0, 19.8, "…ayuda… …ayuda…", "Señal desconocida"]]}, {"n": 6, "title": "Patrones", "who": "T'Rena", "place": "Laboratorio de análisis", "fmt": "video", "lines": [{"who": "T'Rena", "text": "La estructura observada no parece natural. La distribución de los datos sugiere una inteligencia organizadora."}, {"who": "T'Rena", "text": "No es un fenómeno, capitana. Alguien está eligiendo qué borrar."}], "event": "Descubrimiento del agujero de gusano bajorano", "year": "2369", "q": "¿Cómo llaman los bajoranos a los seres que lo habitan?", "opts": ["Los Profetas", "Los Fundadores", "Los Pah-wraiths"], "archive": "Sisko y Dax lo descubrieron en \"Emisario\", el primer episodio de Espacio Profundo Nueve. Es el único agujero de gusano estable conocido.", "fe": 71533.6, "letter": "T", "video": "media/R06.mp4", "poster": "media/R06.jpg", "subs": [[0.6, 7.8, "La estructura observada no parece natural. La distribución de los datos sugiere una inteligencia organizadora.", "T'Rena"], [8.4, 15.8, "No es un fenómeno, capitana. Alguien está eligiendo qué borrar.", "T'Rena"]]}, {"n": 7, "title": "Coordenadas", "who": "Kael y Lyra", "place": "Puente", "fmt": "video", "lines": [{"who": "Kael", "text": "He triangulado la señal."}, {"who": "Kael", "text": "No procede de ningún lugar… sino de un momento."}, {"who": "Kael", "text": "Fuera de la línea temporal."}, {"who": "Lyra", "text": "Activen el campo de fase temporal. Si la historia cambia, nosotros no."}], "event": "Batalla de Wolf 359", "year": "2367", "q": "¿Qué nombre recibió Picard al ser asimilado?", "opts": ["Locutus", "Uno", "Hugh"], "archive": "La Flota perdió 39 naves. Entre las víctimas estaba Jennifer, la esposa de Benjamin Sisko.", "fe": 57823.5, "letter": "R", "video": "media/R07.mp4", "poster": "media/R07.jpg", "subs": [[0.3, 1.6, "He triangulado la señal.", "Kael"], [2.3, 5.3, "No procede de ningún lugar… sino de un momento.", "Kael"], [6.1, 7.7, "Fuera de la línea temporal.", "Kael"], [9.1, 13.4, "Activen el campo de fase temporal. Si la historia cambia, nosotros no.", "Lyra"]]}, {"n": 8, "title": "El Primer Borrado", "who": "Lyra Voss", "place": "Puente, con alerta amarilla", "fmt": "video", "lines": [{"who": "Lyra", "text": "La Enterprise-C nunca llegó a Narendra III."}, {"who": "Lyra", "text": "Y la galaxia ha cambiado con ella."}, {"who": "Lyra", "text": "Fuera de nuestro campo de fase…"}, {"who": "Lyra", "text": "…la Federación está en guerra con el Imperio Klingon."}], "event": "La Enterprise-C atraviesa la falla temporal y vuelve a Narendra III", "year": "2366", "q": "¿Qué oficial viajó al pasado con la Enterprise-C?", "opts": ["Tasha Yar", "Worf", "Guinan"], "archive": "En \"La Enterprise del ayer\" (\"Yesterday's Enterprise\"), Guinan es la única que percibe que la línea temporal está mal. Un fan reconocerá la guerra klingon al instante.", "fe": 45484.5, "letter": "E", "video": "media/R08.mp4", "poster": "media/R08.jpg", "subs": [[1.9, 4.3, "La Enterprise-C nunca llegó a Narendra III.", "Lyra"], [5.1, 6.9, "Y la galaxia ha cambiado con ella.", "Lyra"], [10.9, 12.5, "Fuera de nuestro campo de fase…", "Lyra"], [12.9, 15.5, "…la Federación está en guerra con el Imperio Klingon.", "Lyra"]]}, {"n": 9, "title": "Hacia Atrás", "who": "T'Rena", "place": "Laboratorio, mapa temporal holográfico", "fmt": "video", "lines": [{"who": "T'Rena", "text": "He trazado la ruta de los borrados."}, {"who": "T'Rena", "text": "Cada uno es anterior al anterior."}, {"who": "T'Rena", "text": "La anomalía retrocede por nuestra historia."}, {"who": "T'Rena", "text": "A este ritmo, su destino es el 5 de abril de 2063."}], "event": "Primer encuentro con los Borg", "year": "2365", "q": "¿Quién envió a la Enterprise-D a su encuentro con los Borg?", "opts": ["Q", "Guinan", "Data"], "archive": "En \"¿Quién es Q?\" (\"Q Who\"), Q lo hizo para demostrar que la humanidad no estaba preparada. Murieron 18 tripulantes.", "fe": 64678.1, "letter": "O", "video": "media/R09.mp4", "poster": "media/R09.jpg", "subs": [[1.9, 3.7, "He trazado la ruta de los borrados.", "T'Rena"], [4.9, 6.7, "Cada uno es anterior al anterior.", "T'Rena"], [11.1, 14.0, "La anomalía retrocede por nuestra historia.", "T'Rena"], [18.3, 21.9, "A este ritmo, su destino es el 5 de abril de 2063.", "T'Rena"]]}, {"n": 10, "title": "Orden de Silencio", "who": "Agente Hale y Lyra", "place": "Sala de reuniones", "fmt": "video", "lines": [{"who": "Hale", "text": "Órdenes de Dulmur y Lucsly: abandonen la investigación."}, {"who": "Hale", "text": "No interfieran en la línea temporal."}, {"who": "Lyra", "text": "He registrado mi objeción. Y he fijado rumbo hacia la anomalía."}], "event": "El juicio de Data", "year": "2365", "q": "¿Qué se decidía en el juicio?", "opts": ["Si Data era una persona con derechos o propiedad de la Flota", "Si Data podía ser capitán", "Si Data era un espía romulano"], "archive": "En \"La medida de un hombre\", Riker fue obligado a ejercer de acusador y Picard defendió a Data.", "fe": 41371.2, "letter": "E", "video": "media/R10.mp4", "poster": "media/R10.jpg", "subs": [[0.4, 3.6, "Órdenes de Dulmur y Lucsly: abandonen la investigación.", "Hale"], [3.6, 7.0, "No interfieran en la línea temporal.", "Hale"], [8.4, 13.0, "He registrado mi objeción. Y he fijado rumbo hacia la anomalía.", "Lyra"]]}, {"n": 11, "title": "El Patrón", "who": "T'Rena", "place": "Laboratorio, con los fragmentos flotando en holograma", "fmt": "video", "lines": [{"who": "T'Rena", "text": "Los fragmentos no están desordenados."}, {"who": "T'Rena", "text": "Simplemente no llegan en el orden en que fueron enviados."}, {"who": "T'Rena", "text": "Cada uno lleva una fecha estelar."}, {"who": "T'Rena", "text": "Ordenadlos… y escuchad lo que dicen."}], "event": "Encuentro en Farpoint", "year": "2364", "q": "¿De qué acusó Q a la humanidad en su primer juicio?", "opts": ["De ser una especie salvaje y peligrosa", "De violar la Primera Directiva", "De robar tecnología Q"], "archive": "La estación Farpoint era en realidad un ser vivo, cautivo de los bandi.", "fe": 61936.8, "letter": "I", "video": "media/R11.mp4", "poster": "media/R11.jpg", "subs": [[1.3, 3.4, "Los fragmentos no están desordenados.", "T'Rena"], [4.3, 7.3, "Simplemente no llegan en el orden en que fueron enviados.", "T'Rena"], [11.5, 13.2, "Cada uno lleva una fecha estelar.", "T'Rena"], [13.5, 15.8, "Ordenadlos… y escuchad lo que dicen.", "T'Rena"]]}, {"n": 12, "title": "La Gran Revelación", "who": "Lyra Voss", "place": "Astrometría Temporal", "fmt": "video", "lines": [{"who": "Lyra", "text": "T'Rena tenía razón. Hay un orden detrás de todo esto."}, {"who": "Lyra", "text": "La anomalía no destruye los acontecimientos históricos…"}, {"who": "Lyra", "text": "…se los está llevando."}, {"who": "Lyra", "text": "Toda nuestra historia está siendo almacenada en algún lugar."}], "event": "Explosión de Praxis", "year": "2293", "q": "¿Qué luna klingon explotó?", "opts": ["Praxis", "Qo'noS", "Rura Penthe"], "archive": "La explosión llevó a los Acuerdos de Khitomer y a la paz con los klingon, en Star Trek VI: Aquel país desconocido. El borrado salta 70 años: se está acelerando.", "fe": 48226.7, "letter": "D", "video": "media/R12.mp4", "poster": "media/R12.jpg", "subs": [[3.9, 7.3, "T'Rena tenía razón. Hay un orden detrás de todo esto.", "Lyra"], [8.7, 12.1, "La anomalía no destruye los acontecimientos históricos…", "Lyra"], [12.9, 15.1, "…se los está llevando.", "Lyra"], [19.9, 23.1, "Toda nuestra historia está siendo almacenada en algún lugar.", "Lyra"]]}, {"n": 13, "title": "Consecuencias", "who": "Kael", "place": "Comunicaciones, con la imagen inestable", "fmt": "video", "lines": [{"who": "Kael", "text": "Capitana, el campo de fase está perdiendo estabilidad."}, {"who": "Kael", "text": "Los cambios empiezan a filtrarse dentro de la nave."}, {"who": "Kael", "text": "Andoria fue una de las fundadoras de la Federación."}, {"who": "Kael", "text": "Si eso se borra… yo nunca habré estado aquí."}], "event": "Batalla de la Nebulosa Mutara", "year": "2285", "q": "¿En qué nebulosa se enfrentaron Kirk y Khan?", "opts": ["Mutara", "Briar Patch", "Badlands"], "archive": "En Star Trek II: La ira de Khan, Spock se sacrificó para salvar la nave. El examen Kobayashi Maru aparece en la primera escena.", "fe": 72904.7, "letter": "U", "video": "media/R13.mp4", "poster": "media/R13.jpg", "subs": [[1.9, 4.6, "Capitana, el campo de fase está perdiendo estabilidad.", "Kael"], [4.9, 7.4, "Los cambios empiezan a filtrarse dentro de la nave.", "Kael"], [11.5, 13.2, "Andoria fue una de las fundadoras de la Federación.", "Kael"], [13.7, 15.8, "Si eso se borra… yo nunca habré estado aquí.", "Kael"]]}, {"n": 14, "title": "El Puesto Vacío", "who": "Lyra Voss", "place": "Pasillo de cubierta 4", "fmt": "doc", "lines": [{"who": "Placa", "text": "USS CHRONOS · FLOTA TERRESTRE"}, {"who": "Diario de Lyra", "text": "La placa de dedicatoria ha cambiado. Ya no menciona la Federación. Y hay una consola en el puente… que nadie recuerda haber ocupado."}], "event": "Los tribbles de la estación K-7", "year": "2268", "q": "¿En qué estación espacial se produjo la plaga de tribbles?", "opts": ["K-7", "Espacio Profundo Nueve", "Regula I"], "archive": "Los tribbles nacen preñados. Espacio Profundo Nueve volvió a K-7 en 1996 e insertó a Sisko en las imágenes originales junto a Kirk.", "fe": 53710.2, "letter": "R", "audio": "media/R14.mp3", "still": "media/R14.jpg", "still2": "media/R14_tactica.jpg", "poster": "media/R14.jpg", "subs": [[0.2, 2.2, "Diario de la capitana, suplemento.", "Lyra"], [3.0, 4.9, "La placa de dedicatoria ha cambiado.", "Lyra"], [5.8, 7.5, "Ya no menciona la Federación.", "Lyra"], [8.0, 9.6, "Y hay una consola en el puente…", "Lyra"], [11.2, 12.8, "…que nadie recuerda haber ocupado.", "Lyra"]]}, {"n": 15, "title": "Copias de Seguridad", "who": "T'Rena y Lyra", "place": "Laboratorio", "fmt": "video", "lines": [{"who": "T'Rena", "text": "He comparado los acontecimientos borrados con los ecos antiguos."}, {"who": "T'Rena", "text": "Coinciden. No son ataques… son copias de seguridad."}, {"who": "Lyra", "text": "Alguien está intentando salvar nuestra historia…"}, {"who": "Lyra", "text": "…y la está destruyendo al hacerlo."}], "event": "Khan es despertado", "year": "2267", "q": "¿Cómo se llamaba la nave durmiente de Khan?", "opts": ["SS Botany Bay", "SS Valiant", "USS Reliant"], "archive": "En \"Semilla espacial\" (\"Space Seed\"), Khan es un superhombre de las Guerras Eugénicas de la Tierra.", "fe": 44113.4, "letter": "V", "video": "media/R15.mp4", "poster": "media/R15.jpg", "subs": [[1.2, 4.1, "He comparado los acontecimientos borrados con los ecos antiguos.", "T'Rena"], [4.5, 7.7, "Coinciden. No son ataques… son copias de seguridad.", "T'Rena"], [10.5, 12.9, "Alguien está intentando salvar nuestra historia…", "Lyra"], [13.7, 15.4, "…y la está destruyendo al hacerlo.", "Lyra"]]}, {"n": 16, "title": "Rumbo al Origen", "who": "Lyra Voss", "place": "Puente", "fmt": "video", "lines": [{"who": "Lyra", "text": "Hemos recibido coordenadas desde dentro de la anomalía."}, {"who": "Lyra", "text": "No hay estrella ni planeta…"}, {"who": "Lyra", "text": "…solo una estructura más antigua que la Federación."}, {"who": "Lyra", "text": "Rumbo de entrada."}, {"who": "Lyra", "text": "Teniente Kael, abra un canal…"}, {"who": "Lyra", "text": "¿Kael?"}], "event": "El Guardián de la Eternidad", "year": "2267", "q": "¿Quién tenía que morir para que la historia siguiera su curso?", "opts": ["Edith Keeler", "Carol Marcus", "Leila Kalomi"], "archive": "En \"La ciudad al borde de la eternidad\", McCoy cambia la historia por accidente y la Enterprise deja de existir. Es el gran episodio temporal de la serie original, el espejo de esta historia.", "fe": 68791.4, "letter": "E", "video": "media/R16.mp4", "poster": "media/R16.jpg", "subs": [[1.2, 3.7, "Hemos recibido coordenadas desde dentro de la anomalía.", "Lyra"], [4.0, 5.4, "No hay estrella ni planeta…", "Lyra"], [5.6, 7.8, "…solo una estructura más antigua que la Federación.", "Lyra"], [9.3, 10.3, "Rumbo de entrada.", "Lyra"], [10.8, 12.6, "Teniente Kael, abra un canal…", "Lyra"], [20.5, 21.6, "¿Kael?", "Lyra"]]}, {"n": 17, "title": "La Puerta Temporal", "who": "Lyra y Kael (con interferencias)", "place": "Puente, la Puerta en la pantalla", "fmt": "video", "lines": [{"who": "Lyra", "text": "Ante nosotros…"}, {"who": "Lyra", "text": "…la Puerta Temporal."}, {"who": "Kael", "text": "Las inscripciones… son registros."}, {"who": "Kael", "text": "Millones de ellos."}, {"who": "Lyra", "text": "Detrás de esa puerta está todo lo que hemos perdido."}], "event": "La barrera galáctica", "year": "2265", "q": "¿Qué amigo de Kirk obtuvo poderes casi divinos?", "opts": ["Gary Mitchell", "Charlie Evans", "Ben Finney"], "archive": "\"Donde nadie ha estado jamás\" fue el segundo piloto y el primero con Kirk al mando.", "fe": 56452.4, "letter": "A", "video": "media/R17.mp4", "poster": "media/R17.jpg", "subs": [[2.9, 3.9, "Ante nosotros…", "Lyra"], [5.1, 6.6, "…la Puerta Temporal.", "Lyra"], [10.9, 13.3, "Las inscripciones… son registros.", "Kael"], [14.1, 15.4, "Millones de ellos.", "Kael"], [19.8, 22.5, "Detrás de esa puerta está todo lo que hemos perdido.", "Lyra"]], "note": ["REGISTRO DE SENSORES · ANEXO", "La teniente Kael reapareció en su puesto 4 minutos después. No recuerda haberse ido. Su señal biológica fluctúa.", 7000]}, {"n": 18, "title": "La Biblioteca del Tiempo", "who": "Lyra Voss", "place": "Interior de la Biblioteca", "fmt": "video", "lines": [{"who": "Lyra", "text": "Diario de la capitana."}, {"who": "Lyra", "text": "Hemos cruzado la Puerta."}, {"who": "Lyra", "text": "Al otro lado no hay espacio…"}, {"who": "Lyra", "text": "…hay una biblioteca."}, {"who": "Lyra", "text": "Toda civilización conserva su memoria de alguna manera…"}, {"who": "Lyra", "text": "Este lugar conserva la memoria de todas."}, {"who": "Lyra", "text": "Y hay alguien… o algo…"}, {"who": "Lyra", "text": "…que nos estaba esperando."}], "event": "Pike en Talos IV", "year": "2254", "q": "¿Qué especie de Talos IV crea ilusiones mentales?", "opts": ["Los talosianos", "Los organianos", "Los metrones"], "archive": "\"La jaula\" fue el primer piloto, rodado en 1964 con Christopher Pike como capitán. Se reaprovechó en el episodio doble \"La colección de fieras\" (\"The Menagerie\").", "fe": 59194.6, "letter": "C", "video": "media/R18.mp4", "poster": "media/R18.jpg", "subs": [[0.2, 1.5, "Diario de la capitana.", "Lyra"], [2.3, 3.5, "Hemos cruzado la Puerta.", "Lyra"], [4.1, 5.5, "Al otro lado no hay espacio…", "Lyra"], [6.3, 7.5, "…hay una biblioteca.", "Lyra"], [10.3, 12.9, "Toda civilización conserva su memoria de alguna manera…", "Lyra"], [13.5, 15.8, "Este lugar conserva la memoria de todas.", "Lyra"], [19.9, 21.4, "Y hay alguien… o algo…", "Lyra"], [21.9, 23.3, "…que nos estaba esperando.", "Lyra"]]}, {"n": 19, "title": "MNEMOS", "who": "MNEMOS (avatar holográfico), Lyra y T'Rena", "place": "Biblioteca", "fmt": "video", "lines": [{"who": "MNEMOS", "text": "Soy MNEMOS, guardián de los Ahn-Veth."}, {"who": "MNEMOS", "text": "Nadie recordó a mi pueblo."}, {"who": "MNEMOS", "text": "La línea temporal colapsará."}, {"who": "MNEMOS", "text": "Estoy salvando todo lo que puedo."}, {"who": "Lyra", "text": "¡Kael!"}, {"who": "T'Rena", "text": "Capitana…"}, {"who": "T'Rena", "text": "…ya no figura en los registros de la tripulación."}], "event": "Fundación de la Federación", "year": "2161", "q": "¿En qué ciudad se firmó la Carta de la Federación?", "opts": ["San Francisco", "París", "ShiKahr"], "archive": "Los cuatro miembros fundadores fueron la Tierra, Vulcano, Andoria y Tellar.", "fe": 46855.6, "letter": "R", "video": "media/R19.mp4", "poster": "media/R19.jpg", "subs": [[2.9, 5.3, "Soy MNEMOS, guardián de los Ahn-Veth.", "MNEMOS"], [6.1, 7.6, "Nadie recordó a mi pueblo.", "MNEMOS"], [10.7, 12.7, "La línea temporal colapsará.", "MNEMOS"], [13.3, 15.1, "Estoy salvando todo lo que puedo.", "MNEMOS"], [21.5, 22.5, "¡Kael!", "Lyra"], [25.3, 26.1, "Capitana…", "T'Rena"], [26.5, 29.0, "…ya no figura en los registros de la tripulación.", "T'Rena"]]}, {"n": 20, "title": "Memoria Frágil", "who": "T'Rena y MNEMOS (avatar holográfico)", "place": "Biblioteca", "fmt": "video", "lines": [{"who": "T'Rena", "text": "MNEMOS, tu predicción es ilógica."}, {"who": "MNEMOS", "text": "El futuro no siempre sigue la lógica, T'Rena."}, {"who": "T'Rena", "text": "La línea temporal no colapsará sola."}, {"who": "T'Rena", "text": "Colapsará porque tú la estás vaciando."}, {"who": "MNEMOS", "text": "Entonces… ¿dónde debo guardar la historia?"}], "event": "Ataque xindi a la Tierra", "year": "2153", "q": "¿Qué especie atacó la Tierra en 2153?", "opts": ["Los xindi", "Los suliban", "Los romulanos"], "archive": "El ataque mató a siete millones de personas y llevó a la NX-01 a la Expansión Délfica en la tercera temporada de Enterprise.", "fe": 70162.5, "letter": "S", "video": "media/R20.mp4", "poster": "media/R20.jpg", "subs": [[1.9, 4.1, "MNEMOS, tu predicción es ilógica.", "T'Rena"], [4.5, 7.3, "El futuro no siempre sigue la lógica, T'Rena.", "MNEMOS"], [8.0, 10.1, "La línea temporal no colapsará sola.", "T'Rena"], [11.7, 14.1, "Colapsará porque tú la estás vaciando.", "T'Rena"], [20.0, 22.5, "Entonces… ¿dónde debo guardar la historia?", "MNEMOS"]]}, {"n": 21, "title": "El Receptor", "who": "Lyra Voss", "place": "Biblioteca, a cámara", "fmt": "video", "lines": [{"who": "Lyra", "text": "Por fin entiendo los ecos."}, {"who": "Lyra", "text": "Mi voz estaba en ellos…"}, {"who": "Lyra", "text": "…porque eran nuestras propias transmisiones."}, {"who": "Lyra", "text": "MNEMOS las ha enviado a través del tiempo."}, {"who": "Lyra", "text": "A alguien capaz de recordar."}, {"who": "Lyra", "text": "Nunca fueron para nosotros."}, {"who": "Lyra", "text": "Eran para ti."}], "event": "Lanzamiento de la NX-01 Enterprise", "year": "2151", "q": "¿Cómo se llamaba el perro del capitán Archer?", "opts": ["Porthos", "Spot", "Número Uno"], "archive": "La NX-01 fue la primera nave terrestre capaz de alcanzar curvatura 5. Spot es la gata de Data y Número Uno, el perro de Picard en Star Trek: Picard.", "fe": 50968.9, "letter": "D", "video": "media/R21.mp4", "poster": "media/R21.jpg", "subs": [[1.4, 2.7, "Por fin entiendo los ecos.", "Lyra"], [3.3, 4.7, "Mi voz estaba en ellos…", "Lyra"], [5.3, 7.3, "…porque eran nuestras propias transmisiones.", "Lyra"], [9.4, 12.0, "MNEMOS las ha enviado a través del tiempo.", "Lyra"], [13.0, 14.9, "A alguien capaz de recordar.", "Lyra"], [19.5, 20.8, "Nunca fueron para nosotros.", "Lyra"], [21.0, 22.6, "Eran para ti.", "Lyra"]]}, {"n": 22, "title": "La Decisión", "who": "T'Rena, Hale y Lyra", "place": "Puente, en penumbra", "fmt": "video", "lines": [{"who": "Lyra", "text": "Diario de la capitana, suplemento."}, {"who": "Lyra", "text": "Hemos vuelto a la nave."}, {"who": "Lyra", "text": "La Biblioteca sigue ahí fuera… y nuestra memoria se está apagando."}, {"who": "T'Rena", "text": "Capitana…"}, {"who": "T'Rena", "text": "…mis recuerdos de la Tierra se están desvaneciendo."}, {"who": "T'Rena", "text": "Y los de usted."}, {"who": "Hale", "text": "El Departamento ordena destruir la Biblioteca."}, {"who": "Hale", "text": "Así se detendría el borrado."}, {"who": "Lyra", "text": "Me niego."}, {"who": "Lyra", "text": "Los Ahn-Veth ya fueron olvidados una vez."}, {"who": "Lyra", "text": "No lo serán dos."}], "event": "Primer Contacto con los vulcanos", "year": "2063", "q": "¿En qué pueblo aterrizaron los vulcanos?", "opts": ["Bozeman, Montana", "San Francisco", "Roswell"], "archive": "La nave vulcana era la T'Plana-Hath, en Star Trek: Primer contacto (1996). Lo de Roswell también pasó, pero eso fueron Quark, Rom y Nog en Espacio Profundo Nueve.", "fe": 63307.9, "letter": "V", "video": "media/R22.mp4", "poster": "media/R22.jpg", "subs": [[0.8, 2.7, "Diario de la capitana, suplemento.", "Lyra"], [3.3, 4.3, "Hemos vuelto a la nave.", "Lyra"], [4.7, 7.7, "La Biblioteca sigue ahí fuera… y nuestra memoria se está apagando.", "Lyra"], [9.9, 10.7, "Capitana…", "T'Rena"], [11.5, 13.5, "…mis recuerdos de la Tierra se están desvaneciendo.", "T'Rena"], [14.3, 15.3, "Y los de usted.", "T'Rena"], [17.9, 20.5, "El Departamento ordena destruir la Biblioteca.", "Hale"], [21.1, 22.9, "Así se detendría el borrado.", "Hale"], [25.7, 26.4, "Me niego.", "Lyra"], [27.1, 29.3, "Los Ahn-Veth ya fueron olvidados una vez.", "Lyra"], [29.9, 30.9, "No lo serán dos.", "Lyra"]]}, {"n": 23, "title": "Cascada", "who": "Lyra y T'Rena", "place": "Puente, en alerta roja", "fmt": "video", "lines": [{"who": "T'Rena", "text": "El borrado ha alcanzado el 5 de abril de 2063."}, {"who": "T'Rena", "text": "El Phoenix está desapareciendo."}, {"who": "Lyra", "text": "Transmitid todo."}, {"who": "Lyra", "text": "Cada registro, cada dato, a quien esté escuchando."}, {"who": "Lyra", "text": "Si el Phoenix no despega,"}, {"who": "Lyra", "text": "…nosotros nunca habremos existido."}, {"who": "Lyra", "text": "Recuérdalo."}], "event": "El vuelo del Phoenix", "year": "2063", "q": "¿Cómo se llamaba la nave de Zefram Cochrane?", "opts": ["Phoenix", "Bonaventure", "Valiant"], "archive": "Cochrane construyó el Phoenix dentro de un viejo misil Titan II en Montana y despegó con música de Steppenwolf a todo volumen.", "fe": 55081.3, "letter": "O", "video": "media/R23.mp4", "poster": "media/R23.jpg", "subs": [[1.5, 4.9, "El borrado ha alcanzado el 5 de abril de 2063.", "T'Rena"], [5.1, 6.9, "El Phoenix está desapareciendo.", "T'Rena"], [9.5, 10.7, "Transmitid todo.", "Lyra"], [10.9, 14.0, "Cada registro, cada dato, a quien esté escuchando.", "Lyra"], [17.7, 19.1, "Si el Phoenix no despega,", "Lyra"], [19.3, 21.3, "…nosotros nunca habremos existido.", "Lyra"], [21.5, 22.5, "Recuérdalo.", "Lyra"]]}, {"n": 24, "title": "Última Transmisión", "who": "Toda la tripulación (el puesto de Kael, vacío)", "place": "Puente", "fmt": "video", "lines": [{"who": "Lyra", "text": "Aquí la USS Chronos."}, {"who": "Lyra", "text": "Última transmisión."}, {"who": "T'Rena", "text": "Hemos enviado todo lo que sabemos."}, {"who": "T'Rena", "text": "Ahora está en tus manos."}, {"who": "Lyra", "text": "Si este mensaje ha llegado a destino,"}, {"who": "Lyra", "text": "…entonces el Archivo Chronos ha sobrevivido."}], "event": "La tripulación de la USS Chronos", "year": "—", "q": "Devuelve el saludo de T'Rena:", "opts": ["Larga vida y prosperidad", "Que la Fuerza te acompañe", "Hoy es un buen día para morir"], "archive": "Leonard Nimoy inventó el saludo vulcano a partir de un gesto de bendición que vio de niño en la sinagoga.", "fe": 66049.2, "letter": "E", "video": "media/R24.mp4", "poster": "media/R24.jpg", "subs": [[1.4, 3.3, "Aquí la USS Chronos.", "Lyra"], [4.5, 5.9, "Última transmisión.", "Lyra"], [9.3, 11.4, "Hemos enviado todo lo que sabemos.", "T'Rena"], [11.9, 13.6, "Ahora está en tus manos.", "T'Rena"], [17.4, 19.5, "Si este mensaje ha llegado a destino,", "Lyra"], [19.9, 23.2, "…entonces el Archivo Chronos ha sobrevivido.", "Lyra"]]}];
+const R=RECS.map(r=>[r.title,r.who.replace(/ \(.*\)/,''),r.event,r.year,r.letter,r.fe]);
+const signal=n=>n>=25?100:n===24?6:Math.round(97-(n-1)*(89/22));
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,"0");
+function realDay(){const d=new Date(),m=d.getMonth(),n=d.getDate();if(m===11)return Math.min(n,25);if(m<=5)return 25;return 0}
+function season(){const d=new Date();return d.getMonth()<=5?d.getFullYear()-1:d.getFullYear()}
+(function(){try{const k="chronosf-temporada",t=String(season());if(localStorage.getItem(k)!==t){["chronosf-progreso","chronosf-frag","chronosf-omega"].forEach(x=>localStorage.removeItem(x));localStorage.setItem(k,t)}}catch(e){}})();
+let day=realDay(),done=new Set(),order=[],sel=null,fresh=null;
+function seed(){done=new Set();order=[]}
+let score={};
+try{const s=JSON.parse(localStorage.getItem("chronosf-progreso")||"null");if(s&&s.done){done=new Set(s.done);order=s.order;score=s.score||{}}else seed()}catch(e){seed()}
+function save(){try{localStorage.setItem("chronosf-progreso",JSON.stringify({day,done:[...done],order,score}))}catch(e){}}
+
+const NS="http://www.w3.org/2000/svg",C=300,RAD=240;
+function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);p&&p.appendChild(e);return e}
+const ang=i=>(i-1)/24*2*Math.PI-Math.PI/2;
+const pos=(i,r=RAD)=>[C+r*Math.cos(ang(i)),C+r*Math.sin(ang(i))];
+const state=i=>done.has(i)?"done":i<=day?"today":"locked";
+
+function draw(){
+  const svg=$("ring");svg.innerHTML="";
+  const defs=el("defs",{},svg);
+  for(const [id] of [["glow"],["glowGold"]]){
+    const f=el("filter",{id,x:"-80%",y:"-80%",width:"260%",height:"260%"},defs);
+    el("feGaussianBlur",{in:"SourceGraphic",stdDeviation:"4",result:"b"},f);
+    const m=el("feMerge",{},f);el("feMergeNode",{in:"b"},m);el("feMergeNode",{in:"b"},m);el("feMergeNode",{in:"SourceGraphic"},m);
+  }
+  // arcos del anillo: azul entre recuperados, dorado tenue en el resto
+  for(let i=1;i<=24;i++){const j=i%24+1;const[a,b]=pos(i),[c,d]=pos(j);
+    const blue=done.has(i)&&done.has(j);el("path",{d:`M${a} ${b} A${RAD} ${RAD} 0 0 1 ${c} ${d}`,class:"arc "+(blue?"c":"g")},svg)}
+  // filamentos de cada nodo al núcleo y cruces entre nodos
+  for(let i=1;i<=24;i++){
+    const blue=done.has(i);const[x,y]=pos(i,RAD-30);const a=ang(i)+(i%2?0.7:-0.7);
+    const cx=C+110*Math.cos(a),cy=C+110*Math.sin(a);
+    el("path",{d:`M${x} ${y} Q${cx} ${cy} ${C} ${C}`,class:"fil "+(blue?"c flow":"g")},svg);
+    const j=((i*7+5)%24)+1;const[x2,y2]=pos(j,RAD-30);
+    el("path",{d:`M${x} ${y} Q${(x+x2)/2+(C-(x+x2)/2)*.6} ${(y+y2)/2+(C-(y+y2)/2)*.6} ${x2} ${y2}`,class:"fil "+(blue&&done.has(j)?"c":"g"),style:"opacity:.18"},svg);
+  }
+  // chispas a lo largo del anillo
+  let seedR=7;const rnd=()=>(seedR=(seedR*9301+49297)%233280)/233280;
+  for(let k=0;k<140;k++){const t=rnd()*Math.PI*2,r=RAD+(rnd()-.5)*46;const i=Math.floor(((t+Math.PI/2)/(2*Math.PI)*24+24.5)%24)+1;
+    el("circle",{cx:C+r*Math.cos(t),cy:C+r*Math.sin(t),r:rnd()*1.3+.3,class:"spark",fill:done.has(i)?"#bfefff":"#f5d79a",opacity:(rnd()*.6+.2).toFixed(2)},svg)}
+  // núcleo Ω
+  const omOpen=done.size===24&&day>=25;
+  const g=el("g",{class:"omega"+(omOpen?" open":""),tabindex:0,role:"button","aria-label":"Protocolo Omega"},svg);
+  el("circle",{cx:C,cy:C,r:30,class:"core"},g);
+  el("circle",{cx:C,cy:C,r:40,fill:"none",stroke:"rgba(255,255,255,.25)","stroke-dasharray":"2 5"},g);
+  el("circle",{cx:C,cy:C,r:15,class:"dot"},g);
+  el("text",{x:C,y:C+1,class:"sym"},g).textContent="Ω";
+  el("text",{x:C,y:C+60,class:"lab"},g).textContent=omOpen?"PROTOCOLO OMEGA · DISPONIBLE":"PROTOCOLO OMEGA · CLASIFICADO";
+  g.onclick=()=>{sfx("tap");pick(25)};g.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();pick(25)}};
+  // nodos
+  for(let i=1;i<=24;i++){
+    const[x,y]=pos(i),st=state(i);
+    const n=el("g",{class:`node ${st}${sel===i?" sel":""}`,tabindex:0,role:"button","aria-label":`Registro ${i}: ${st==="done"?"recuperado":st==="today"?"disponible hoy":"se abre el "+i+" de diciembre"}`},svg);
+    el("circle",{cx:x,cy:y,r:31,class:"halo"},n);
+    el("circle",{cx:x,cy:y,r:26,class:"halo2"},n);
+    el("circle",{cx:x,cy:y,r:20,class:"core"},n);
+    el("circle",{cx:x,cy:y,r:st==="locked"?3.5:6,class:"dot"},n);
+    const[lx,ly]=pos(i,RAD+46);
+    el("text",{x:lx,y:ly,class:"num"},n).textContent=pad(i);
+    n.onclick=()=>{sfx("tap");pick(i)};n.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();pick(i)}};
+  }
+}
+
+function status(){setTimeout(tick,0);
+  $("sRec").textContent=pad(done.size);
+  const s=signal(Math.max(1,Math.min(day,25)));
+  $("sSig").textContent=s+" %";$("meter").style.width=s+"%";
+  $("sOm").textContent=done.size===24&&day>=25?"LISTO":"BLOQ.";
+  
+  const fe=(79400+day*2.7).toFixed(1);$("fe").textContent="FE "+fe;
+  $("sub").textContent="USS CHRONOS · REGISTROS DE LA CAPITANA LYRA VOSS · FE "+fe;
+  $("fcount").textContent=done.size+"/24";$("farch").hidden=!done.has(11);
+  const f=$("frags");f.innerHTML="";
+  for(let k=0;k<24;k++){const d=document.createElement("div"),i=order[k];
+    d.className="frag"+(i?" got":"")+(i&&i===fresh?" new":"");d.textContent=i?R[i-1][4]:"";
+    if(i)d.title=`CHR-${pad(i)} · FE ${R[i-1][5]}`;f.appendChild(d)}
+  const log=$("log");log.innerHTML="";
+  const shown=[...order].slice(-5).reverse();
+  for(const i of shown){const li=document.createElement("li");li.innerHTML=`<span>${R[i-1][2]}</span><b>${R[i-1][3]} · RESTAURADO</b>`;log.appendChild(li)}
+  if(day>=1&&day<=23&&!done.has(day)){const li=document.createElement("li");li.className="bad";li.innerHTML=`<span>${R[day-1][2]}</span><b>${R[day-1][3]} · BORRÁNDOSE</b>`;log.prepend(li)}
+  if(!log.children.length)log.innerHTML='<li><span>Sin registros todavía</span><b>—</b></li>';
+}
+
+function pick(i){
+  sel=i;const d=$("detail");
+  if(i===25){
+    const ok=done.size===24&&day>=25;
+    d.innerHTML=`<div class="code">REGISTRO R25</div><h3>Protocolo Omega</h3>`+(ok
+      ?(omegaDone?`<span class="tag done">ARCHIVO RECONSTRUIDO</span><p>Rango: <b style="color:var(--gold)">${rankOf(hits())}</b> · ${hits()} de 24 restauraciones.</p><button class="btn" id="go">Repetir el Protocolo Omega</button>`:`<span class="tag done">ACCESO AUTORIZADO</span><p>Los 24 fragmentos están listos para sincronizarse.</p><button class="btn" id="go">Sincronizar archivo</button>`)
+      :`<span class="tag locked">ACCESO DENEGADO</span><p>${done.size<24?`Faltan ${24-done.size} registros por recuperar.`:"Disponible el 25 de diciembre."}</p>`);
+    if(ok)$("go").onclick=omega;
+  }else{
+    const r=R[i-1],st=state(i),code="R"+pad(i);
+    if(st==="locked")toast(`ACCESO DENEGADO · ${code} se abre el ${i} de diciembre`);
+    d.innerHTML=`<div class="code">REGISTRO ${code}</div><h3>${st==="locked"?"█████ ███":r[0]}</h3>
+      <span class="tag ${st}">${st==="done"?"RECUPERADO":st==="today"?"SEÑAL DISPONIBLE":"BLOQUEADO · "+i+" DIC"}</span>
+      <p>Transmisión de <span class="who">${st==="locked"?"origen desconocido":r[1]}</span>.</p>
+      ${st==="done"?`<p>Restaurado: ${r[2]}${r[3]!=="—"?" ("+r[3]+")":""}<br>Fragmento CHR-${pad(i)} · FE ${r[5]} · <b style="color:var(--cyan)">${r[4]}</b></p>`:""}
+      ${st==="done"?`<button class="btn" id="replay">Ver transmisión</button>`:""}
+      ${st==="locked"?`<p>Esta transmisión llegará el ${i} de diciembre.</p>`:""}
+      ${st==="today"?`<p>Integridad de señal: ${signal(i)} %. La transmisión puede llegar dañada.</p><button class="btn gold" id="open">Abrir registro</button>`:""}`;
+    
+    if(st==="today")$("open").onclick=()=>openRec(i);
+    if(st==="done")$("replay").onclick=()=>openRec(i,true);
+  }
+  draw();
+}
+
+/* ===== Pantalla de registro ===== */
+let AC=null;
+function ac(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==="suspended")AC.resume()}catch(e){}return AC}
+function beep(f=880,d=.09,t=0,type="sine",v=.08){if(!sndOn)return;const a=ac();if(!a)return;const o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,a.currentTime+t);g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+t+d);o.connect(g).connect(a.destination);o.start(a.currentTime+t);o.stop(a.currentTime+t+d+.02)}
+
+let sndOn=true;try{sndOn=localStorage.getItem("chronos-snd")!=="0"}catch(e){}
+let amb=null,duck=false;
+function ambStart(){const a=ac();if(!a||amb)return;const g=a.createGain();g.gain.value=0;g.connect(a.destination);
+  const n=a.sampleRate*4,b=a.createBuffer(1,n,a.sampleRate),d=b.getChannelData(0);let last=0;for(let i=0;i<n;i++){const w=Math.random()*2-1;last=(last+.02*w)/1.02;d[i]=last*3.5}
+  const src=a.createBufferSource();src.buffer=b;src.loop=true;const lp=a.createBiquadFilter();lp.type="lowpass";lp.frequency.value=170;src.connect(lp).connect(g);src.start();
+  [55,82.4,110.2].forEach((f,k)=>{const o=a.createOscillator();o.type="sine";o.frequency.value=f;const og=a.createGain();og.gain.value=[.35,.16,.07][k];const l=a.createOscillator();l.frequency.value=.07+k*.03;const lg=a.createGain();lg.gain.value=[.12,.07,.035][k];l.connect(lg).connect(og.gain);o.connect(og).connect(g);o.start();l.start()});
+  amb={g,target:.055};ambLevel()}
+function ambLevel(){if(!amb)return;const a=ac();amb.g.gain.cancelScheduledValues(a.currentTime);amb.g.gain.setTargetAtTime(sndOn&&!duck?amb.target:0,a.currentTime,.6)}
+function setDuck(v){duck=v;ambLevel()}
+function sweep(f1,f2,d,type="sine",v=.05,t=0){if(!sndOn)return;const a=ac();if(!a)return;const o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.setValueAtTime(f1,a.currentTime+t);o.frequency.exponentialRampToValueAtTime(f2,a.currentTime+t+d);g.gain.setValueAtTime(v,a.currentTime+t);g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+t+d);o.connect(g).connect(a.destination);o.start(a.currentTime+t);o.stop(a.currentTime+t+d+.02)}
+function sfx(k){if(!sndOn)return;
+  if(k==="tap"){beep(1180,.05,0,"square",.022);beep(1580,.06,.05,"square",.018)}
+  else if(k==="open"){sweep(500,1500,.25,"sine",.06);beep(1760,.12,.24,"sine",.04)}
+  else if(k==="alert"){for(let r=0;r<2;r++)sweep(420,880,.42,"sawtooth",.03,r*.5)}
+  else if(k==="ok"){[784,988,1175,1568].forEach((f,i)=>beep(f,.18,i*.08,"sine",.06))}
+  else if(k==="ko"){[523,440,349].forEach((f,i)=>beep(f,.22,i*.12,"triangle",.06))}
+  else if(k==="frag"){beep(880,.5,0,"sine",.04);for(let i=0;i<7;i++)beep(1800+Math.random()*1600,.6,i*.05,"sine",.022)}}
+
+/* ===== Música original (generada en el navegador) ===== */
+const MUS={out:null,cur:null};
+const n2f=m=>440*Math.pow(2,(m-69)/12);
+function impulse(a,sec,dec){const n=a.sampleRate*sec,b=a.createBuffer(2,n,a.sampleRate);for(let c=0;c<2;c++){const d=b.getChannelData(c);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,dec)}return b}
+function musOut(){const a=ac();if(!a)return null;if(!MUS.out){const g=a.createGain(),conv=a.createConvolver(),wet=a.createGain();conv.buffer=impulse(a,3.4,2.4);wet.gain.value=.4;g.gain.value=sndOn?.6:0;g.connect(a.destination);g.connect(conv);conv.connect(wet).connect(a.destination);MUS.out=g}return a}
+function musLevel(){if(!MUS.out)return;const a=ac();MUS.out.gain.setTargetAtTime(sndOn?.6:0,a.currentTime,.3)}
+function piece(){const a=musOut();if(!a)return null;musStop(1.2);const g=a.createGain();g.gain.value=1;g.connect(MUS.out);MUS.cur=g;return{a,g,t0:a.currentTime+.05}}
+function musStop(fade=1.5){if(!MUS.cur)return;const a=ac(),g=MUS.cur;MUS.cur=null;g.gain.cancelScheduledValues(a.currentTime);g.gain.setValueAtTime(g.gain.value,a.currentTime);g.gain.linearRampToValueAtTime(0,a.currentTime+fade);setTimeout(()=>{try{g.disconnect()}catch(e){}},fade*1000+200)}
+function mpad(P,notes,t,dur,vol=.05,cut=1300){const{a,g}=P;const lp=a.createBiquadFilter();lp.type="lowpass";lp.frequency.value=cut;lp.Q.value=.6;const e=a.createGain();e.gain.setValueAtTime(0,t);e.gain.linearRampToValueAtTime(vol,t+Math.min(1.4,dur*.35));e.gain.setValueAtTime(vol,t+dur-1.2);e.gain.linearRampToValueAtTime(0,t+dur+.6);lp.connect(e).connect(g);
+  notes.forEach(m=>[-3,0,3].forEach((dt,j)=>{const o=a.createOscillator();o.type=j===1?"triangle":"sawtooth";o.frequency.value=n2f(m);o.detune.value=dt;const og=a.createGain();og.gain.value=j===1?.9:.45;o.connect(og).connect(lp);o.start(t);o.stop(t+dur+.8)}));return lp}
+function bell(P,m,t,vol=.05,len=2.6){const{a,g}=P;[[1,1],[2.76,.35],[5.4,.12]].forEach(([r,v])=>{const o=a.createOscillator(),e=a.createGain();o.type="sine";o.frequency.value=n2f(m)*r;e.gain.setValueAtTime(0,t);e.gain.linearRampToValueAtTime(vol*v,t+.01);e.gain.exponentialRampToValueAtTime(.0001,t+len*(r===1?1:.5));o.connect(e).connect(g);o.start(t);o.stop(t+len+.1)})}
+function musIntro(){if(!sndOn)return;const P=piece();if(!P)return;const t=P.t0;
+  [[50,57,62,64,65],[46,53,57,62,65],[43,50,55,58,62],[45,52,57,62,64]].forEach((c,k)=>mpad(P,c,t+k*4,4.6,.035,1100));
+  [74,77,81,79].forEach((m,k)=>bell(P,m,t+1.6+k*.5,.05));
+  [81,79,77,76,74].forEach((m,k)=>bell(P,m,t+9.4+k*.42,.045));bell(P,69,t+14.2,.05,4)}
+function musOmegaBuild(sec){if(!sndOn)return;const P=piece();if(!P)return;const t=P.t0,lp=mpad(P,[38,50,57,62,65],t,sec+1,.05,300);
+  lp.frequency.setValueAtTime(300,t);lp.frequency.exponentialRampToValueAtTime(3200,t+sec);
+  const arp=[62,65,69,74,77,81];const n=Math.floor(sec/.32);for(let k=0;k<n;k++)bell(P,arp[k%arp.length]+(k>=arp.length?12*(k/arp.length|0)%24:0),t+.3+k*.32,.018+.02*k/n,1.2)}
+function musOmegaHit(){if(!sndOn)return;const P=piece();if(!P)return;const t=P.t0;mpad(P,[38,50,57,62,66,69,74],t,6.5,.06,2600);
+  [74,78,81,86].forEach((m,k)=>bell(P,m,t+.15+k*.22,.06,3.5));bell(P,62,t+.1,.05,5)}
+let FAN=null;
+function fanPlay(){musStop(.8);if(!sndOn)return;try{if(!FAN){FAN=new Audio("media/fanfarria.mp3?v=1");FAN.preload="auto"}FAN.pause();FAN.currentTime=0;FAN.volume=.42;FAN.play().catch(()=>{})}catch(e){}}
+function fanStop(){if(!FAN||FAN.paused)return;const f=FAN;let v=f.volume;const iv=setInterval(()=>{v-=.08;if(v<=0){clearInterval(iv);f.pause()}else f.volume=v},90)}
+function lcars(){beep(1320,.07,0);beep(990,.07,.09);beep(1480,.12,.18)}
+function static_(dur=.6,v=.05){if(!sndOn)return;const a=ac();if(!a)return;const n=a.sampleRate*dur,b=a.createBuffer(1,n,a.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(Math.random()<.3?1:.3);const s=a.createBufferSource(),g=a.createGain();s.buffer=b;g.gain.value=v;const f=a.createBiquadFilter();f.type="highpass";f.frequency.value=1200;s.connect(f).connect(g).connect(a.destination);s.start()}
+
+function noiseLoop(cv,alive){const x=cv.getContext("2d");const w=cv.width=160,h=cv.height=90;const img=x.createImageData(w,h);
+  (function f(){if(!alive())return;for(let i=0;i<img.data.length;i+=4){const v=Math.random()*255;img.data[i]=img.data[i+1]=img.data[i+2]=v;img.data[i+3]=255}x.putImageData(img,0,0);requestAnimationFrame(f)})()}
+
+let recState=null;
+const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches;
+function closeRec(){if(recState){recState.alive=false;if(recState.aud)recState.aud.pause();if(recState.vid)recState.vid.pause();clearTimeout(recState.gt);clearTimeout(recState.t)}$("rec").hidden=true;$("rec").innerHTML="";recState=null;document.body.style.overflow="";setDuck(false);musStop(1.5);fanStop()}
+
+function openRec(i,replay=false){
+  const r=RECS[i-1],code="R"+pad(i),sig=signal(i);
+  const box=$("rec");box.hidden=false;document.body.style.overflow="hidden";
+  box.innerHTML=`<div class="rhead"><span class="pill">${code}</span><span>ARCHIVO CHRONOS · ${r.title.toUpperCase()}</span><span class="grow"></span><span>SEÑAL ${sig} %</span><button class="x" id="rx">Cerrar ✕</button></div>
+  <div class="steps" id="steps">${"<i></i>".repeat(6)}</div><div class="rbody" id="rb"></div>`;
+  $("rx").onclick=closeRec;
+  const st={i,r,sig,replay,alive:true};recState=st;setDuck(true);sfx("open");
+  // desbloquear audio y vídeo dentro del gesto del usuario
+  ac();let vid=null;
+  if(r.video){vid=document.createElement("video");vid.src=r.video+"?v=5";vid.poster=r.poster||"";vid.playsInline=true;vid.preload="auto";vid.className="media";
+    vid.play().then(()=>{vid.pause();vid.currentTime=0}).catch(()=>{})}
+  let aud=null;
+  if(r.audio){aud=new Audio(r.audio+"?v=2");aud.preload="auto";aud.play().then(()=>{aud.pause();aud.currentTime=0}).catch(()=>{})}
+  st.vid=vid;st.aud=aud;phaseIntro(st);
+}
+function step(n){document.querySelectorAll("#steps i").forEach((e,k)=>e.classList.toggle("on",k<n))}
+function body(html){const b=$("rb");b.innerHTML=`<div class="phase">${html}</div>`;return b}
+
+function phaseIntro(st){
+  step(1);const{r,i}=st;
+  body(`<div class="intro"><div class="l2">TRANSMISIÓN RECUPERADA</div><div class="l1">Archivo Chronos</div><div class="l3">Registro R${pad(i)} · ${r.title}<span class="blink">_</span></div><div class="l2">FE ${r.fe} · INTEGRIDAD ${st.sig} %</div></div>`);
+  lcars();st.t=setTimeout(()=>st.alive&&phasePlay(st),2300);
+}
+
+function phasePlay(st){
+  step(2);const{r}=st;
+  const b=body(`<div class="screen" id="scr"><div class="hud"><span class="dot"></span>REC · R${pad(st.i)} · FE ${r.fe}</div><div class="hud tr">SEÑAL ${st.sig} %</div><div class="tear"></div><canvas id="nz"></canvas><div class="subs" id="subs"></div></div>
+    <div class="vctl"><button class="ghost" id="cc">Subtítulos: sí</button><button class="ghost" id="skip">Saltar transmisión</button></div>`);
+  const scr=$("scr");noiseLoop($("nz"),()=>st.alive&&!!document.getElementById("nz"));
+  let subsOn=true;$("cc").onclick=()=>{subsOn=!subsOn;$("cc").textContent="Subtítulos: "+(subsOn?"sí":"no");if(!subsOn)$("subs").innerHTML=""};
+  const end=()=>{if(!st.alive||st.ended)return;st.ended=true;clearTimeout(st.gt);if(st.vid)st.vid.pause();if(st.aud)st.aud.pause();phaseCut(st)};
+  $("skip").onclick=end;st.ended=false;
+  // fallos de señal: más frecuentes cuanto peor es la integridad
+  const glitch=()=>{if(!st.alive||st.ended)return;if(!REDUCED){const c=Math.random()<.5?"g":"g2";scr.classList.add(c);if(Math.random()<.5)static_(.12,.025);setTimeout(()=>scr.classList.remove(c),70+Math.random()*130)}
+    const gap=(1500+Math.random()*3500)*(0.35+st.sig/100);st.gt=setTimeout(glitch,gap)};
+  st.gt=setTimeout(glitch,1200);
+  if(st.vid){
+    scr.prepend(st.vid);st.vid.currentTime=0;
+    if(r.note){const n=document.createElement("div");n.className="vnote";n.innerHTML=`<b>${r.note[0]}</b>${r.note[1]}`;scr.appendChild(n);setTimeout(()=>n.classList.add("on"),300);st.nt=setTimeout(()=>n.classList.remove("on"),r.note[2]||6000)}
+    st.vid.ontimeupdate=()=>{if(!subsOn||!$("subs"))return;const t=st.vid.currentTime,s=(r.subs||[]).find(x=>t>=x[0]&&t<=x[1]);$("subs").innerHTML=s?`<b>${(s[3]||r.who.split(" (")[0]).toUpperCase()}</b>${s[2]}`:""};
+    st.vid.onended=end;
+    st.vid.play().catch(()=>{if(st.ended||!$("subs"))return;$("subs").innerHTML='<b>TOCA PARA REPRODUCIR</b>';scr.onclick=()=>{st.vid.play();scr.onclick=null}});
+  }else if(st.aud&&st.r.fmt==="doc"){
+    docRec(st,scr,end,()=>subsOn);
+  }else if(st.aud){
+    audioRec(st,scr,end,()=>subsOn);
+  }else{
+    planB(st,scr,end);
+  }
+}
+
+function docRec(st,scr,end,subsOn){
+  const{r}=st,a=st.aud;const d=document.createElement("div");d.className="docsc media";
+  d.innerHTML=`<img class="bgc" src="${r.still}" alt=""><img class="cons" src="${r.still2}" alt="">${r.kdot?'<i class="kdot"></i>':""}<div class="dtag" id="dtag">DOCUMENTO RECUPERADO · CUBIERTA 4 · PLACA DE DEDICATORIA</div>
+    <div class="plq" id="plq"><div class="p1">U.S.S. CHRONOS</div><div class="hr"></div><div class="p2" id="pq2">FLOTA ESTELAR</div><div class="p3" id="pq3">FEDERACIÓN UNIDA DE PLANETAS</div><div class="p4">ASTILLEROS DE UTOPIA PLANITIA · MARTE</div></div>`;
+  scr.prepend(d);requestAnimationFrame(()=>d.classList.add("zoom"));
+  const plq=$("plq"),q2=$("pq2"),q3=$("pq3");const tm=[];const at=(t,f)=>tm.push({t,f,done:false});
+  const flick=()=>{if(REDUCED)return;scr.classList.add("g");static_(.18,.04);setTimeout(()=>scr.classList.remove("g"),140)};
+  const rewrite=(e,txt,cb)=>{let s=e.textContent;const del=setInterval(()=>{if(!st.alive){clearInterval(del);return}s=s.slice(0,-1);e.innerHTML=s+'<span class="cur">&nbsp;</span>';if(!s){clearInterval(del);let n=0;const ty=setInterval(()=>{if(!st.alive){clearInterval(ty);return}e.innerHTML=txt.slice(0,++n)+(n<txt.length?'<span class="cur">&nbsp;</span>':"");if(n>=txt.length){clearInterval(ty);cb&&cb()}},55)}},40)};
+  at(3.4,flick);at(4.4,flick);
+  at(5.8,()=>{flick();plq.classList.add("new");rewrite(q3,"TIERRA UNIDA");rewrite(q2,"FLOTA TERRESTRE")});
+  at(7.7,()=>{flick();d.classList.add("end");$("dtag").innerHTML="PUENTE · ESTACIÓN TÁCTICA · <b>OCUPANTE: SIN REGISTRO</b>"});
+  at(11.0,flick);
+  const tick=()=>{if(!st.alive||!document.body.contains(d))return;const t=a.currentTime;for(const e of tm)if(!e.done&&t>=e.t){e.done=true;e.f()}
+    if(subsOn()){const s=(r.subs||[]).find(z=>t>=z[0]&&t<=z[1]);$("subs").innerHTML=s?`<b>${(s[3]||"").toUpperCase()}</b>${s[2]}`:""}requestAnimationFrame(tick)};
+  a.onended=()=>{st.t=setTimeout(end,1200)};a.currentTime=0;
+  a.play().then(tick).catch(()=>{if(st.ended||!$("subs"))return;$("subs").innerHTML="<b>TOCA PARA REPRODUCIR</b>";scr.onclick=()=>{a.play().then(tick);scr.onclick=null}});
+}
+
+function audioRec(st,scr,end,subsOn){
+  const{r}=st,a=st.aud;const pb=document.createElement("div");pb.className="planb audio";
+  pb.innerHTML=`<div class="tag2">REGISTRO DE AUDIO RECUPERADO · SIN SEÑAL DE VÍDEO</div>
+    <div class="arow"><div class="pfile"><img src="${r.still}" alt=""><span>ARCHIVO DE PERSONAL<br>${r.who.split(" ·")[0].toUpperCase()}</span></div><canvas class="wave" id="wave"></canvas></div>`;
+  scr.prepend(pb);
+  const wv=document.getElementById("wave"),x=wv.getContext("2d");wv.width=600;wv.height=160;
+  let an=null,buf=null;try{const c=ac();if(!a._src){a._src=c.createMediaElementSource(a)}an=c.createAnalyser();an.fftSize=1024;a._src.disconnect();a._src.connect(an);an.connect(c.destination);buf=new Uint8Array(an.fftSize)}catch(e){an=null}
+  let t=0;(function f(){if(!st.alive||!document.getElementById("wave"))return;x.clearRect(0,0,600,160);
+    const unk=a.currentTime>=15.9;x.strokeStyle=unk?"#ff7a7a":"#7fd9ff";x.lineWidth=2;x.beginPath();
+    if(an){an.getByteTimeDomainData(buf);for(let k=0;k<600;k++){const v=buf[Math.floor(k*buf.length/600)]/128-1;const y=80+v*120;k?x.lineTo(k,y):x.moveTo(k,y)}}
+    else{for(let k=0;k<600;k++){const y=80+Math.sin(k*.05+t)*20*Math.random();k?x.lineTo(k,y):x.moveTo(k,y)}}
+    x.stroke();t+=.2;requestAnimationFrame(f)})();
+  a.ontimeupdate=()=>{if(!subsOn()||!$("subs"))return;const tt=a.currentTime,s=(r.subs||[]).find(z=>tt>=z[0]&&tt<=z[1]);$("subs").innerHTML=s?`<b>${(s[3]||"").toUpperCase()}</b>${s[2]}`:""};
+  a.onended=end;a.currentTime=0;
+  a.play().catch(()=>{if(st.ended||!$("subs"))return;$("subs").innerHTML="<b>TOCA PARA REPRODUCIR</b>";scr.onclick=()=>{a.play();scr.onclick=null}});
+  const prevEnd=end;st.stopAudio=()=>{try{a.pause()}catch(e){}};
+}
+
+function planB(st,scr,end){
+  const{r}=st;const pb=document.createElement("div");pb.className="planb";
+  if(r.fmt==="doc"){pb.innerHTML=`<div class="tag2">DOCUMENTO RECUPERADO · DIARIO DE LA CAPITANA</div><div class="plate">USS CHRONOS · <s>FLOTA ESTELAR</s> FLOTA TERRESTRE</div>`}
+  else{pb.innerHTML=`<div class="tag2">${r.fmt==="audio"?"REGISTRO DE AUDIO · SIN IMAGEN":"SEÑAL DE VÍDEO NO DISPONIBLE · SOLO AUDIO Y TEXTO"}</div><canvas class="wave" id="wave"></canvas>`}
+  scr.prepend(pb);
+  const wv=document.getElementById("wave");
+  if(wv){const x=wv.getContext("2d");wv.width=600;wv.height=120;let t=0;(function f(){if(!st.alive||!document.getElementById("wave"))return;x.clearRect(0,0,600,120);x.strokeStyle="#7fd9ff";x.lineWidth=2;x.beginPath();for(let k=0;k<600;k++){const y=60+Math.sin(k*.05+t)*Math.sin(k*.013+t*.7)*38*(0.4+Math.random()*.6);k?x.lineTo(k,y):x.moveTo(k,y)}x.stroke();t+=.15;requestAnimationFrame(f)})()}
+  const lines=r.lines.filter(l=>l.who!=="Placa");let k=0;
+  const next=()=>{if(!st.alive||st.ended)return;if(k>=lines.length){st.t=setTimeout(end,1200);return}
+    const l=lines[k++];const who=l.who?l.who.toUpperCase():"";let n=0;beep(660,.05);
+    const tick=setInterval(()=>{if(!st.alive||st.ended){clearInterval(tick);return}$("subs").innerHTML=(who?`<b>${who}</b>`:"")+l.text.slice(0,++n);if(n>=l.text.length){clearInterval(tick);st.t=setTimeout(next,1600)}},32)};
+  next();
+}
+
+function phaseCut(st){
+  step(3);body(`<div class="screen"><div class="noise"><canvas id="nz2"></canvas><b>SEÑAL PERDIDA</b></div></div>`);
+  noiseLoop($("nz2"),()=>st.alive&&!!document.getElementById("nz2"));static_(1.1,.06);
+  st.t=setTimeout(()=>st.alive&&phaseAlert(st),1500);
+}
+
+function phaseAlert(st){
+  step(4);const{r}=st;sfx("alert");
+  const masked=r.event.replace(/\S/g,(c,k)=>k%3===1?"█":c);
+  body(`<div class="alert"><div class="k">⚠ ALERTA DE BORRADO · BASE DE DATOS DE LA FEDERACIÓN</div>
+    <h3><span class="corrupt" id="evn">${masked}</span></h3><div class="yr">${r.year!=="—"?"AÑO "+r.year+" · ":""}████ DATOS BORRADOS ████</div>
+    <p>${st.i===24?"Ya no queda historia que borrar. Ahora es la tripulación de la Chronos la que empieza a desaparecer.":"Este acontecimiento está desapareciendo de los registros. Solo puede restaurarse desde la memoria de alguien que lo recuerde."}</p>
+    <button class="btn gold" id="rest">Restaurar desde tu memoria</button></div>`);
+  $("rest").onclick=()=>phaseQuiz(st);
+}
+
+function phaseQuiz(st){
+  step(5);const{r,i}=st;
+  const ANS="CABACBBCBACACBCCBAABCBAA",pos="ABC".indexOf(ANS[i-1]),wrong=r.opts.slice(1).map(t=>({t,ok:false}));const opts=wrong.slice();opts.splice(pos<0?0:pos,0,{t:r.opts[0],ok:true});
+  body(`<div class="quiz"><div class="k">RESTAURACIÓN HISTÓRICA · ${r.event.toUpperCase()}</div><h3>${r.q}</h3>
+    <div class="opts">${opts.map((o,k)=>`<button class="opt" data-k="${k}"><span>${"ABC"[k]}</span>${o.t}</button>`).join("")}</div><div id="res"></div></div>`);
+  document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+    const k=+b.dataset.k,ok=opts[k].ok;
+    document.querySelectorAll(".opt").forEach((x,j)=>{x.disabled=true;if(opts[j].ok)x.classList.add("ok")});if(!ok)b.classList.add("ko");
+    if(!st.replay||!(i in score)){score[i]=ok;save()}
+    ok?sfx("ok"):sfx("ko");
+    $("res").innerHTML=`<div class="verdict ${ok?"ok":"ko"}">${ok?"RESTAURACIÓN COMPLETA":"RESTAURACIÓN PARCIAL"}</div>
+      <div class="archive"><b>ARCHIVO HISTÓRICO · ${r.event.toUpperCase()}${r.year!=="—"?" · "+r.year:""}</b>${r.archive}</div>
+      <p style="margin-top:16px"><button class="btn" id="tofrag">Recuperar fragmento</button></p>`;
+    $("tofrag").onclick=()=>phaseFrag(st);
+  });
+}
+
+function phaseFrag(st){
+  step(6);const{r,i}=st;
+  const hook=r.lines.length?r.lines[r.lines.length-1]:null;
+  body(`<div class="fragbig"><div class="k">FRAGMENTO TEMPORAL RECUPERADO</div><div class="card">${r.letter}</div>
+    <div class="meta">CHR-${pad(i)} · FECHA ESTELAR DE ORIGEN ${r.fe}</div>
+    <p class="hook">${i===11?"T'Rena tenía razón: los fragmentos no llegan en el orden en que fueron enviados.":"Guárdalo. Todavía no sabes qué significa."}</p>
+    <button class="btn" id="back">Volver a la red temporal</button></div>`);
+  sfx("frag");
+  $("back").onclick=()=>{if(!done.has(i)){done.add(i);order.push(i);fresh=i}save();closeRec();status();fresh=null;pick(i)};
+}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&recState)closeRec()});
+
+
+/* ===== R25 · Protocolo Omega ===== */
+const OMEGA={video:"media/R25.mp4",subs:[[1.3, 3.5, "Os pregunté dónde guardar la historia.", "MNEMOS"], [4.3, 6.9, "La respuesta estaba en vuestra señal.", "MNEMOS"], [10.1, 11.6, "No en una biblioteca.", "MNEMOS"], [13.1, 14.6, "En quien la recuerda.", "MNEMOS"], [28.1, 29.4, "¿Me he perdido algo?", "Kael"], [30.3, 31.3, "Fascinante.", "T'Rena"], [33.9, 36.3, "Creíste que reconstruías nuestros registros.", "Lyra"], [36.5, 39.3, "En realidad, estabas preservando la memoria.", "Lyra"], [41.3, 42.8, "Mientras alguien recuerde,", "Lyra"], [42.9, 44.9, "…la historia nunca desaparecerá.", "Lyra"], [45.7, 47.6, "Nada se pierde si se recuerda.", "Lyra"], [59.3, 60.2, "Y ahora…", "MNEMOS"], [60.5, 62.8, "…alguien recuerda también a mi pueblo.", "MNEMOS"]]};
+const RANKS=[[0,"Cadete del Archivo"],[9,"Teniente Temporal"],[17,"Comandante Cronista"],[23,"Agente Temporal de la Federación"]];
+function hits(){let n=0;for(let i=1;i<=24;i++)if(done.has(i)&&score[i]!==false)n++;return n}
+function rankOf(n){let r=RANKS[0][1];for(const [m,t] of RANKS)if(n>=m)r=t;return r}
+let omegaDone=false;try{omegaDone=localStorage.getItem("chronosf-omega")==="1"}catch(e){}
+function omega(){
+  const box=$("rec");box.hidden=false;document.body.style.overflow="hidden";
+  box.innerHTML=`<div class="rhead"><span class="pill">R25</span><span>ARCHIVO CHRONOS · PROTOCOLO OMEGA</span><span class="grow"></span><span>SEÑAL 100 %</span><button class="x" id="rx">Cerrar ✕</button></div>
+  <div class="steps" id="steps">${"<i></i>".repeat(3)}</div><div class="rbody" id="rb"></div>`;
+  $("rx").onclick=closeRec;const st={alive:true,omega:true};recState=st;ac();setDuck(true);
+  try{if(!FAN){FAN=new Audio("media/fanfarria.mp3?v=1");FAN.preload="auto"}FAN.muted=true;FAN.play().then(()=>{FAN.pause();FAN.currentTime=0;FAN.muted=false}).catch(()=>{FAN.muted=false})}catch(e){}
+  let vid=document.createElement("video");vid.src=OMEGA.video+"?v=3";vid.playsInline=true;vid.preload="auto";vid.className="media";
+  vid.play().then(()=>{vid.pause();vid.currentTime=0}).catch(()=>{});st.vid=vid;
+  omSync(st);
+}
+function omSync(st){
+  step(1);
+  const b=body(`<div class="om"><div class="k">SINCRONIZANDO ARCHIVO CHRONOS</div><h3>24 de 24 registros recuperados</h3>
+    <div class="syncbox" id="sb"></div><div class="cnt" id="cnt">Ordenando por fecha estelar de origen…</div><div id="omnext"></div></div>`);
+  const sb=$("sb"),W=sb.clientWidth,list=order.length===24?[...order]:Array.from({length:24},(_,k)=>k+1);
+  const sorted=[...list].sort((a,b)=>RECS[a-1].fe-RECS[b-1].fe);
+  const s=Math.floor(Math.min(46,(W-11*6)/12)),g=Math.round(s*.16),h=s*1.25;sb.style.setProperty("--s",s+"px");
+  // posición inicial: 2 filas de 12 en orden de llegada
+  const x0=(W-(12*s+11*g))/2,pos0=k=>[x0+(k%12)*(s+g),20+Math.floor(k/12)*(h+g)];
+  // posición final: EL VERDADERO / ARCHIVO / ERES TÚ
+  const lines=[[2,9],[7],[4,2]],pos1=[];let idx=0;
+  lines.forEach((ws,li)=>{const n=ws.reduce((a,b)=>a+b,0)+(ws.length-1);const lx=(W-(n*s+(n-1)*g))/2;let c=0;
+    ws.forEach((w,wi)=>{for(let q=0;q<w;q++){pos1[idx++]=[lx+c*(s+g),li*(h+g*2)];c++}c++})});
+  sb.style.height=(3*(h+g*2))+"px";
+  musOmegaBuild((24*90+1500+1600)/1000);const tiles={};list.forEach((i,k)=>{const t=document.createElement("div");t.className="t";let L=RECS[i-1].letter;tiles[i]=t;t.textContent=L;const [x,y]=pos0(k);t.style.transform=`translate(${x}px,${y}px)`;sb.appendChild(t)});
+  const last=sorted[23];tiles[last].dataset.u=1;
+  st.t=setTimeout(()=>{if(!st.alive)return;sorted.forEach((i,k)=>{setTimeout(()=>{if(!st.alive)return;const [x,y]=pos1[k];tiles[i].style.transform=`translate(${x}px,${y}px)`;beep(500+k*28,.05,0,"sine",.04)},k*90)});
+    setTimeout(()=>{if(!st.alive)return;tiles[last].textContent="Ú";sb.classList.add("done");musOmegaHit();
+      $("cnt").innerHTML='<span class="final">EL VERDADERO ARCHIVO ERES TÚ</span>';
+      setTimeout(()=>{if(!st.alive)return;$("omnext").innerHTML=`<div class="k gold" style="margin:6px 0 14px">PROTOCOLO OMEGA · ACCESO AUTORIZADO</div><button class="btn gold" id="omplay">Recibir la transmisión final</button>`;
+        $("omplay").onclick=()=>omVideo(st)},1400)},24*90+1500)},1600);
+}
+function omVideo(st){
+  step(2);musStop(1);fanStop();const vid=st.vid;
+  body(`<div class="screen" id="scr"><div class="hud"><span class="dot"></span>REC · R25 · PROTOCOLO OMEGA</div><div class="hud tr">SEÑAL 100 %</div><div class="subs" id="subs"></div></div>
+    <div class="vctl"><button class="ghost" id="cc">Subtítulos: sí</button><button class="ghost" id="skip">Saltar transmisión</button></div>`);
+  const scr=$("scr");let subsOn=true;$("cc").onclick=()=>{subsOn=!subsOn;$("cc").textContent="Subtítulos: "+(subsOn?"sí":"no");if(!subsOn)$("subs").innerHTML=""};
+  const end=()=>{if(!st.alive||st.ended)return;st.ended=true;try{vid.pause()}catch(e){}omFinal(st)};
+  $("skip").onclick=end;st.ended=false;
+  scr.prepend(vid);vid.currentTime=0;vid.onended=end;vid.onerror=end;
+  vid.ontimeupdate=()=>{if(!subsOn||st.ended||!$("subs"))return;const t=vid.currentTime,s=OMEGA.subs.find(x=>t>=x[0]&&t<=x[1]);$("subs").innerHTML=s?`<b>${(s[3]||"").toUpperCase()}</b>${s[2]}`:""};
+  vid.play().catch(()=>{if(st.ended)return;if(vid.error){end();return}if(!$("subs"))return;$("subs").innerHTML='<b>TOCA PARA REPRODUCIR</b>';scr.onclick=()=>{vid.play();scr.onclick=null}});
+}
+function omFinal(st){
+  step(3);fanPlay();omegaDone=true;try{localStorage.setItem("chronosf-omega","1")}catch(e){}
+  const n=hits(),rk=rankOf(n);let nm="";try{nm=localStorage.getItem("chronosf-nombre")||""}catch(e){}
+  body(`<div class="om"><div class="k">ARCHIVO CHRONOS 100 % RECONSTRUIDO · AUTORIZACIÓN OMEGA CONCEDIDA</div>
+    <h3>Nada se pierde si se recuerda</h3>
+    <div class="tiny">Has restaurado ${n} de 24 acontecimientos de la historia de la Federación.</div>
+    <div class="rank">${rk}</div>
+    <div class="namerow"><label for="cname" class="tiny">Tu nombre para el certificado</label><input id="cname" maxlength="32" value="${nm.replace(/"/g,"&quot;")}" placeholder="Escribe tu nombre"><button class="btn" id="cmake">Generar certificado</button></div>
+    <img class="cert" id="cimg" alt="Certificado de servicio temporal" hidden>
+    <div class="namerow" id="cact" hidden><a class="btn gold" id="cdl" download="Certificado_Archivo_Chronos.png">Descargar certificado</a><span class="tiny">Si no se descarga, mantén pulsada la imagen para guardarla.</span></div>
+    <div class="vctl"><button class="ghost" id="oagain">Ver de nuevo la transmisión</button><button class="ghost" id="oback">Volver a la red temporal</button></div></div>`);
+  const make=()=>{const v=($("cname").value||"").trim();try{localStorage.setItem("chronosf-nombre",v)}catch(e){}
+    drawCert(v||"Oficial sin nombre",n,rk).then(url=>{$("cimg").src=url;$("cimg").hidden=false;$("cdl").href=url;$("cact").hidden=false})};
+  $("cmake").onclick=make;$("cname").onkeydown=e=>{if(e.key==="Enter")make()};
+  if(nm)make();
+  $("oagain").onclick=()=>{st.ended=false;omVideo(st)};
+  $("oback").onclick=()=>{closeRec();status();pick(25)};
+  const ph=$("phrase");ph.hidden=false;ph.textContent="EL VERDADERO ARCHIVO ERES TÚ";$("fragnote").textContent="ARCHIVO CHRONOS 100 % RECONSTRUIDO · AUTORIZACIÓN OMEGA CONCEDIDA";
+}
+function drawCert(name,n,rk){
+  return (document.fonts?document.fonts.ready:Promise.resolve()).then(()=>{
+  const W=1600,H=1000,c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d");
+  const g=x.createRadialGradient(W/2,H*0.42,80,W/2,H/2,W*0.7);g.addColorStop(0,"#13284a");g.addColorStop(1,"#03070f");x.fillStyle=g;x.fillRect(0,0,W,H);
+  for(let i=0;i<260;i++){x.fillStyle=`rgba(255,255,255,${Math.random()*.6})`;x.fillRect(Math.random()*W,Math.random()*H,1.5,1.5)}
+  x.strokeStyle="#f5c76a";x.lineWidth=3;x.strokeRect(40,40,W-80,H-80);x.strokeStyle="rgba(127,217,255,.6)";x.lineWidth=1.5;x.strokeRect(58,58,W-116,H-116);
+  // franjas de estilo consola
+  x.fillStyle="#f5c76a";x.beginPath();x.roundRect?x.roundRect(90,90,260,34,17):x.rect(90,90,260,34);x.fill();x.fillStyle="#7fd9ff";x.beginPath();x.roundRect?x.roundRect(W-350,90,260,34,17):x.rect(W-350,90,260,34);x.fill();
+  x.fillStyle="#06111f";x.font="700 20px Rajdhani, Arial Narrow, sans-serif";x.textAlign="center";x.fillText("USS CHRONOS",220,114);x.fillText("ARCHIVO CHRONOS",W-220,114);
+  // emblema propio del Archivo Chronos: anillo de 24 nodos con el núcleo Ω
+  x.save();x.translate(W/2,188);x.strokeStyle="rgba(127,217,255,.75)";x.lineWidth=2;x.beginPath();x.arc(0,0,48,0,Math.PI*2);x.stroke();
+  for(let k=0;k<24;k++){const a=k/24*Math.PI*2-Math.PI/2;x.fillStyle="#7fd9ff";x.beginPath();x.arc(48*Math.cos(a),48*Math.sin(a),k%6?2.6:4,0,Math.PI*2);x.fill()}
+  x.fillStyle="#f5c76a";x.beginPath();x.arc(0,0,22,0,Math.PI*2);x.fill();x.fillStyle="#06111f";x.font="700 30px Rajdhani, Arial Narrow, sans-serif";x.textAlign="center";x.textBaseline="middle";x.fillText("Ω",0,1);x.textBaseline="alphabetic";x.restore();
+  x.textAlign="center";x.fillStyle="#7fd9ff";x.font="600 30px Rajdhani, Arial Narrow, sans-serif";x.fillText("CERTIFICADO DE SERVICIO TEMPORAL",W/2,290);
+  x.fillStyle="#cfd8e6";x.font="400 26px 'IBM Plex Mono', monospace";x.fillText("Se certifica que",W/2,360);
+  x.fillStyle="#ffffff";x.font="700 84px Rajdhani, Arial Narrow, sans-serif";let fs=84;while(x.measureText(name).width>W-260&&fs>40){fs-=4;x.font=`700 ${fs}px Rajdhani, Arial Narrow, sans-serif`}x.fillText(name,W/2,460);
+  x.fillStyle="#cfd8e6";x.font="400 26px 'IBM Plex Mono', monospace";
+  x.fillText("ha recuperado los 24 registros de la USS Chronos",W/2,530);x.fillText(`y restaurado ${n} de 24 acontecimientos de la historia de la Federación`,W/2,570);
+  x.fillStyle="#f5c76a";x.font="700 48px Rajdhani, Arial Narrow, sans-serif";x.fillText(rk.toUpperCase(),W/2,660);
+  if(n>=23){x.fillStyle="#7fd9ff";x.font="600 26px Rajdhani, Arial Narrow, sans-serif";x.fillText("AUTORIZACIÓN OMEGA",W/2,700)}
+  x.fillStyle="#ffffff";x.font="italic 600 34px Rajdhani, Arial Narrow, sans-serif";x.fillText("«Nada se pierde si se recuerda»",W/2,768);
+  x.strokeStyle="rgba(207,216,230,.6)";x.lineWidth=1.5;x.beginPath();x.moveTo(W/2-200,838);x.lineTo(W/2+200,838);x.stroke();
+  x.fillStyle="#cfd8e6";x.font="400 22px 'IBM Plex Mono', monospace";x.fillText("Capitana Lyra Voss · USS Chronos",W/2,868);
+  x.fillStyle="rgba(207,216,230,.7)";x.font="400 18px 'IBM Plex Mono', monospace";x.fillText("25 DE DICIEMBRE · FECHA ESTELAR "+(79400+25*2.7).toFixed(1),W/2,900);
+  x.fillStyle="rgba(207,216,230,.45)";x.font="400 13px 'IBM Plex Mono', monospace";x.fillText("Producción de fans sin ánimo de lucro · No oficial · Star Trek es una marca de CBS Studios Inc.",W/2,926);
+  return c.toDataURL("image/png")});
+}
+
+/* ===== Archivo de fragmentos (desde R11) ===== */
+let manual=null;try{manual=JSON.parse(localStorage.getItem("chronosf-frag")||"null")}catch(e){}
+function fragList(){const got=[...order];if(manual&&manual.length===got.length&&manual.every(i=>got.includes(i)))return manual.slice();return got}
+function openFA(){const box=$("farc");box.hidden=false;document.body.style.overflow="hidden";let list=fragList(),selF=null;
+  const render=()=>{box.innerHTML=`<div class="rhead"><span class="pill">CHR</span><span>ARCHIVO DE FRAGMENTOS · ${list.length} DE 24</span><span class="grow"></span><button class="x" id="fax">Cerrar ✕</button></div>
+    <div class="rbody"><div class="phase">
+      <p class="fa-help">Toca un fragmento y luego otro para intercambiarlos. Cada fragmento lleva la fecha estelar en que fue enviado.</p>
+      <div class="fa-read">${list.map(i=>RECS[i-1].letter).join("")||"—"}</div>
+      <div class="fa-grid">${list.map((i,k)=>`<button class="fcard${selF===k?" on":""}" data-k="${k}"><b>${RECS[i-1].letter}</b><span>CHR-${pad(i)}</span><span>FE ${RECS[i-1].fe}</span></button>`).join("")}</div>
+      <div class="vctl"><button class="ghost" id="fafe">Ordenar por fecha estelar</button><button class="ghost" id="faar">Orden de llegada</button></div>
+    </div></div>`;
+    $("fax").onclick=()=>{box.hidden=true;box.innerHTML="";document.body.style.overflow=""};
+    box.querySelectorAll(".fcard").forEach(b=>b.onclick=()=>{const k=+b.dataset.k;if(selF===null){selF=k}else{[list[selF],list[k]]=[list[k],list[selF]];selF=null;keep()}beep(880,.04);render()});
+    $("fafe").onclick=()=>{list.sort((a,b)=>RECS[a-1].fe-RECS[b-1].fe);selF=null;keep();lcars();render()};
+    $("faar").onclick=()=>{list=[...order];selF=null;keep();render()};};
+  const keep=()=>{manual=list.slice();try{localStorage.setItem("chronosf-frag",JSON.stringify(manual))}catch(e){}};
+  render();}
+$("farch").onclick=openFA;
+
+let tt;function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2600)}
+
+
+
+
+
+
+/* ===== Arranque, oficial de guardia, cuenta atrás y recordatorios ===== */
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function getName(){try{return localStorage.getItem("chronosf-nombre")||""}catch(e){return ""}}
+function setOfficer(){const nm=getName();$("officer").textContent=nm?"OFICIAL DE GUARDIA: "+nm.toUpperCase():""}
+function boot(){ac();ambStart();musIntro();const box=document.querySelector("#splash .box");const nm=getName();
+  box.innerHTML='<div class="boot" id="boot" aria-live="polite"></div>';const bt=$("boot");
+  const lines=nm?["USS CHRONOS · ARCHIVO TEMPORAL","Reconociendo huella de voz…","Bienvenido de nuevo, "+nm+"."]:["USS CHRONOS · ARCHIVO TEMPORAL","Conectando con la red temporal…","Señal localizada. Integridad 97 %.","Identifíquese, oficial."];
+  let k=0;
+  const enter=()=>{$("splash").hidden=true;sfx("open");musStop(3)};
+  const ask=()=>{const f=document.createElement("form");f.className="bootask";f.innerHTML='<label for="bname" class="bl">Nombre:</label><input id="bname" maxlength="32" autocomplete="nickname" placeholder="Tu nombre"><button class="btn" type="submit">Acceder</button>';bt.appendChild(f);$("bname").focus();
+    f.onsubmit=e=>{e.preventDefault();const v=$("bname").value.trim();if(!v){$("bname").focus();return}try{localStorage.setItem("chronosf-nombre",v)}catch(e){}setOfficer();sfx("ok");const p=document.createElement("div");p.className="bl ok";p.textContent="Acceso autorizado, "+v+".";f.replaceWith(p);setTimeout(enter,1000)}};
+  const next=()=>{if(k>=lines.length){if(nm)setTimeout(enter,700);else ask();return}const p=document.createElement("div");p.className="bl"+(nm&&k===lines.length-1?" ok":"");bt.appendChild(p);const t=lines[k++];let n=0;
+    const iv=setInterval(()=>{p.textContent=t.slice(0,++n);if(n%2)beep(1500,.015,0,"square",.01);if(n>=t.length){clearInterval(iv);setTimeout(next,260)}},26)};
+  next()}
+function tick(){const el=$("nextsig");if(!el)return;const now=new Date();let target=null,label="";
+  if(day<1){target=new Date(now.getFullYear(),11,1);label="Primera transmisión en "}
+  else if(day<25){target=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1);label=day<24?"Próxima transmisión en ":"Protocolo Omega en "}
+  if(!target||target<=now){el.textContent=day>=25?"Todas las transmisiones han llegado.":"";return}
+  const s=Math.floor((target-now)/1000),d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);
+  el.textContent=label+(d?d+" d ":"")+h+" h "+String(m).padStart(2,"0")+" min"}
+setInterval(tick,30000);
+function icsFile(){const now=new Date(),y=now.getMonth()<=5?now.getFullYear()-1:now.getFullYear(),url=location.href.split("#")[0],p2=n=>String(n).padStart(2,"0");
+  const fold=l=>{let o="";while(l.length>72){o+=l.slice(0,72)+"\r\n ";l=l.slice(72)}return o+l};
+  let o="BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Archivo Chronos//ES\r\nCALSCALE:GREGORIAN\r\n";
+  for(let i=1;i<=25;i++){const dt=`${y}12${p2(i)}`,t=i<25?`Archivo Chronos · Nueva transmisión R${p2(i)}`:"Archivo Chronos · Protocolo Omega";
+    o+=["BEGIN:VEVENT",`UID:chronos-${y}-${i}@archivo-chronos`,`DTSTAMP:${y}1101T000000Z`,`DTSTART:${dt}T090000`,`DTEND:${dt}T091500`,fold("SUMMARY:"+t),fold("DESCRIPTION:Ha llegado una nueva transmisión de la USS Chronos. Archivo Chronos es una producción de fans gratuita y sin ánimo de lucro. "+url),fold("URL:"+url),"BEGIN:VALARM","ACTION:DISPLAY",fold("DESCRIPTION:"+t),"TRIGGER:PT0M","END:VALARM","END:VEVENT"].join("\r\n")+"\r\n"}
+  o+="END:VCALENDAR\r\n";
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([o],{type:"text/calendar;charset=utf-8"}));a.download="Archivo_Chronos.ics";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);
+  toast("Abre el archivo descargado para añadir los 25 avisos a tu calendario")}
+$("ics").onclick=()=>{sfx("tap");icsFile()};
+$("snd").textContent="Sonido: "+(sndOn?"sí":"no");
+$("snd").onclick=()=>{sndOn=!sndOn;try{localStorage.setItem("chronos-snd",sndOn?"1":"0")}catch(e){}$("snd").textContent="Sonido: "+(sndOn?"sí":"no");ac();ambStart();ambLevel();musLevel();if(!sndOn){musStop(.5);fanStop()}if(sndOn)sfx("tap")};
+function openCred(){sfx("tap");const c=$("cred");c.hidden=false;c.scrollTop=0;document.body.style.overflow="hidden";$("credx").focus()}
+function closeCred(){$("cred").hidden=true;if($("rec").hidden&&$("farc").hidden)document.body.style.overflow=""}
+document.querySelectorAll(".credbtn").forEach(b=>b.onclick=e=>{e.stopPropagation();openCred()});
+$("credx").onclick=closeCred;
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("cred").hidden)closeCred()});
+$("share").onclick=async()=>{sfx("tap");const url=location.href.split("#")[0].split("?")[0];
+  const data={title:"Archivo Chronos",text:"Archivo Chronos: un calendario de Adviento hecho por fans de Star Trek, gratis y sin ánimo de lucro. 24 transmisiones perdidas, del 1 al 25 de diciembre.",url};
+  try{if(navigator.share){await navigator.share(data);return}}catch(e){if(e&&e.name==="AbortError")return}
+  try{await navigator.clipboard.writeText(data.text+" "+url);toast("Enlace copiado. Pégalo donde quieras compartirlo")}catch(e){toast(url)}};
+setOfficer();
+$("start").onclick=boot;
+status();pick(day<1?1:(day<=24?day:25));if(day<1)toast("El Archivo Chronos se abre el 1 de diciembre");
+</script>
+
+</body>
+</html>
